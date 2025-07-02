@@ -129,8 +129,12 @@ class _MeetingScreenState extends State<MeetingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Reported by: $reportedBy'),
-                Text('Body found: $deadPlayer'),
+                const Text(
+                  'Return at once to the Dining Room to discuss.',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text('Body reported by: $reportedBy'),
+                Text('Dead Person: $deadPlayer'),
                 Text('Location: $location'),
                 const SizedBox(height: 16),
                 const Text('Players:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),

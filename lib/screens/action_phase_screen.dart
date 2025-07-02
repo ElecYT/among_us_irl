@@ -155,6 +155,10 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
+                const Text(
+                  'Your goal as crewmate is to complete all tasks or vote out the imposter. Refrain from talking to crewmates, limiting discussion to meetings',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
                 ElevatedButton(
                   onPressed: isDead
                       ? null

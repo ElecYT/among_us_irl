@@ -103,10 +103,15 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
+
               const Text(
                 'Play Among Us in Real Life!',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
+              ),
+              const Text(
+                'Get ready for an epic game of Among Us played in real life! Complete tasks, kill players (if you''re the imposter), and vote out players to win the game.',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 40),
               ElevatedButton(
