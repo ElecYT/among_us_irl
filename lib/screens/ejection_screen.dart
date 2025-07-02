@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 class EjectionScreen extends StatefulWidget {
   final String roomCode;
-  final String? playerName; // optional, for navigation
+  final String? playerName;
 
   const EjectionScreen({
     required this.roomCode,
@@ -18,11 +18,12 @@ class EjectionScreen extends StatefulWidget {
 class _EjectionScreenState extends State<EjectionScreen> {
   bool _isProcessing = false;
 
-  Future<void> _continueToActionPhase(
-      Map<String, dynamic> data,
-      List<Map<String, dynamic>> players,
-      String? ejected,
-      bool tie) async {
+  String? ejected;
+  bool tie = false;
+  List<Map<String, dynamic>> players = [];
+  String message = 'Processing...';
+
+  Future<void> _continueToActionPhase() async {
     if (_isProcessing) return;
 
     setState(() => _isProcessing = true);
@@ -61,80 +62,81 @@ class _EjectionScreenState extends State<EjectionScreen> {
     }
   }
 
+  Future<void> _loadData() async {
+    final snapshot = await FirebaseFirestore.instance
+        .collection('games')
+        .doc(widget.roomCode)
+        .get();
+
+    final data = snapshot.data() as Map<String, dynamic>? ?? {};
+    final votes = Map<String, String>.from(data['votes'] ?? {});
+    final playerList = List<Map<String, dynamic>>.from(data['players'] ?? []);
+
+    // Save for button use
+    players = playerList;
+
+    // Tally votes
+    final tally = <String, int>{};
+    for (final vote in votes.values) {
+      tally[vote] = (tally[vote] ?? 0) + 1;
+    }
+
+    // Determine ejected
+    String? result;
+    int maxVotes = 0;
+    bool isTie = false;
+    tally.forEach((key, count) {
+      if (count > maxVotes) {
+        result = key;
+        maxVotes = count;
+        isTie = false;
+      } else if (count == maxVotes) {
+        isTie = true;
+      }
+    });
+
+    setState(() {
+      ejected = result;
+      tie = isTie;
+      message = (tie || ejected == null || ejected == 'skip')
+          ? 'No one was ejected.'
+          : '$ejected was ejected.';
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: FutureBuilder<DocumentSnapshot>(
-        future: FirebaseFirestore.instance
-            .collection('games')
-            .doc(widget.roomCode)
-            .get(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting ||
-              !snapshot.hasData) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(child: Text("Error: ${snapshot.error}"));
-          }
-
-          final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
-          final votes = Map<String, String>.from(data['votes'] ?? {});
-          final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
-
-          // Tally votes
-          final tally = <String, int>{};
-          for (final vote in votes.values) {
-            tally[vote] = (tally[vote] ?? 0) + 1;
-          }
-
-          // Determine ejection
-          String? ejected;
-          int maxVotes = 0;
-          bool tie = false;
-          tally.forEach((key, count) {
-            if (count > maxVotes) {
-              ejected = key;
-              maxVotes = count;
-              tie = false;
-            } else if (count == maxVotes) {
-              tie = true;
-            }
-          });
-
-          String message;
-          if (tie || ejected == null || ejected == 'skip') {
-            message = 'No one was ejected.';
-          } else {
-            message = '$ejected was ejected.';
-          }
-
-          return Padding(
-            padding: const EdgeInsets.all(32),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  message,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
+      backgroundColor: Colors.black87,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                message,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
-                const SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: _isProcessing
-                      ? null
-                      : () => _continueToActionPhase(data, players, ejected, tie),
-                  child: const Text("Continue to Action Phase"),
-                ),
-              ],
-            ),
-          );
-        },
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _isProcessing ? null : _continueToActionPhase,
+                child: const Text("Continue to Action Phase"),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

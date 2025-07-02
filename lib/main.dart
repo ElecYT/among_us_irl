@@ -112,6 +112,7 @@ class HomeScreen extends StatelessWidget {
               const Text(
                 'Get ready for an epic game of Among Us played in real life! Complete tasks, kill players (if you''re the imposter), and vote out players to win the game.',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
               ElevatedButton(
