@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "671560784167",
+    "project_id": "among-us-irl-5ec19",
+    "storage_bucket": "among-us-irl-5ec19.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:671560784167:android:e7d86051337dab12a53102",
+        "android_client_info": {
+          "package_name": "me.elec"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgtdA8JR6C2t03iV_neACNUbBMz_vWweU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
