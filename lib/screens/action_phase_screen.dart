@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:among_us_irl/screens/final_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'meeting_screen.dart';
@@ -7,10 +8,12 @@ import 'report_body_screen.dart';
 class ActionPhaseScreen extends StatefulWidget {
   final String roomCode;
   final String playerName;
+  final bool isHost;
 
   const ActionPhaseScreen({
     required this.roomCode,
     required this.playerName,
+    required this.isHost,
     super.key,
   });
 
@@ -67,6 +70,7 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
         builder: (_) => MeetingScreen(
           roomCode: widget.roomCode,
           playerName: widget.playerName,
+          isHost: widget.isHost,
         ),
       ),
     );
@@ -143,13 +147,19 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
           // Ensure tasks are initialized
           ensureTasksInitialized(players);
 
-          // Auto-navigate if phase changes
           if (phase == 'meeting') {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (mounted) _navigateToMeeting(context);
-            });
-            return const Center(child: CircularProgressIndicator());
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (_) => MeetingScreen(
+                  roomCode: widget.roomCode,
+                  playerName: widget.playerName,
+                  isHost: widget.isHost,
+                ),
+              ),
+            );
           }
+
 
           return Padding(
             padding: const EdgeInsets.all(16),

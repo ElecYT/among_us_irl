@@ -1,13 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import 'action_phase_screen.dart';
+
 class EjectionScreen extends StatefulWidget {
   final String roomCode;
-  final String? playerName;
-
+  final String playerName;
+  final bool isHost;
   const EjectionScreen({
     required this.roomCode,
-    this.playerName,
+    required this.playerName,
+    required this.isHost,
     Key? key,
   }) : super(key: key);
 
@@ -25,45 +28,31 @@ class _EjectionScreenState extends State<EjectionScreen> {
 
   Future<void> _continueToActionPhase() async {
     if (_isProcessing) return;
-
     setState(() => _isProcessing = true);
 
     final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
 
     try {
+      // Update eliminated player's role if needed
       if (!tie && ejected != null && ejected != 'skip') {
         final updatedPlayers = players.map((p) {
           if (p['name'] == ejected) return {...p, 'role': 'dead'};
           return p;
         }).toList();
-
         await roomRef.update({'players': updatedPlayers});
       }
-
+      // Advance phase
       await roomRef.update({
         'votes': {},
         'phase': 'action',
       });
 
-      if (!mounted) return;
-
-      Navigator.pushReplacementNamed(
-        context,
-        '/action',
-        arguments: {
-          'roomCode': widget.roomCode,
-          'playerName': widget.playerName,
-        },
-      );
+      // Do NOT navigate here! Navigation now handled by StreamBuilder on phase change.
     } catch (e) {
-      print("❌ Error transitioning to action phase: $e");
-
-      // ✅ Show an error to the user (optional)
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to continue: $e')),
       );
     } finally {
-      // ✅ Always reset the flag so the button is clickable again
       if (mounted) setState(() => _isProcessing = false);
     }
   }
@@ -118,32 +107,80 @@ class _EjectionScreenState extends State<EjectionScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black87,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                message,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-                textAlign: TextAlign.center,
+    final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
+
+    return StreamBuilder<DocumentSnapshot>(
+      stream: roomRef.snapshots(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return Scaffold(
+            backgroundColor: Colors.black87,
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+        final phase = data['phase'] ?? '';
+
+        // <-- This block listens for global phase change, then navigates all players
+        if (phase == 'action') {
+          // Use microtask to avoid build-context errors with Navigator
+          Future.microtask(() {
+            if (!mounted) return;
+            Navigator.pushReplacementNamed(
+              context,
+              '/action',
+              arguments: {
+                'roomCode': widget.roomCode,
+                'playerName': widget.playerName,
+              },
+            );
+          });
+          return const SizedBox(); // or a loading spinner if you want
+        }
+
+        if (phase == 'action') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (_) => ActionPhaseScreen(
+                roomCode: widget.roomCode,
+                playerName: widget.playerName,
+                isHost: widget.isHost,
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isProcessing ? null : _continueToActionPhase,
-                child: const Text("Continue to Action Phase"),
+            ),
+          );
+        }
+
+        // ... (Remainder is same as your current content below)
+        return Scaffold(
+          backgroundColor: Colors.black87,
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    message, // <-- keep existing message logic
+                    style: const TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 24),
+                  ElevatedButton(
+                    onPressed: _isProcessing ? null : _continueToActionPhase,
+                    child: const Text("Continue to Action Phase"),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

@@ -87,6 +87,7 @@ class RoleRevealScreen extends StatelessWidget {
                         builder: (context) => ActionPhaseScreen(
                           roomCode: roomCode,
                           playerName: playerName,
+                          isHost: false,
                         ),
                       ),
                     );

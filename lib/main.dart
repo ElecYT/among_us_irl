@@ -1,10 +1,11 @@
+import 'package:among_us_irl/screens/ejection_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
 import 'screens/host_game_screen.dart';
 import 'screens/join_game_screen.dart';
-import 'screens/action_phase_screen.dart'; // Change to 'action_phase_screen.dart' and ActionPhaseScreen if you update filenames/classes
+import 'screens/action_phase_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,44 +21,51 @@ class AmongUsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        theme: ThemeData(
-        primarySwatch: Colors.grey, // Dark theme base color
-        brightness: Brightness.dark, // Setting the brightness to dark
-        scaffoldBackgroundColor: Colors.black87, // Dark background color for the whole app
-        cardColor: Colors.blueGrey[900], // Color of cards like dialogs or bottom sheets
-        textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: Colors.white), // Text color in light mode
-    bodySmall: TextStyle(color: Colors.white70),
-    bodyMedium: TextStyle(color: Colors.white70),
-    titleLarge: TextStyle(color: Colors.white70),
-    titleMedium: TextStyle(color: Colors.white70),
-    titleSmall: TextStyle(color: Colors.white70),
-    ),
-    ),
-    home: MaterialApp(
       title: 'Among Us IRL',
       debugShowCheckedModeBanner: false,
-      // You can use routes/table here, or just use push with MaterialPageRoute as elsewhere.
+      theme: ThemeData(
+        primarySwatch: Colors.grey,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: Colors.black87,
+        cardColor: Colors.blueGrey[900],
+        textTheme: const TextTheme(
+          bodyLarge: TextStyle(color: Colors.white),
+          bodySmall: TextStyle(color: Colors.white70),
+          bodyMedium: TextStyle(color: Colors.white70),
+          titleLarge: TextStyle(color: Colors.white70),
+          titleMedium: TextStyle(color: Colors.white70),
+          titleSmall: TextStyle(color: Colors.white70),
+        ),
+      ),
+      home: const HomeScreen(),
       onGenerateRoute: (settings) {
-        // Handle named navigation with arguments
         if (settings.name == '/action') {
           final args = settings.arguments as Map<String, dynamic>;
           return MaterialPageRoute(
-            builder: (_) => ActionPhaseScreen( // Change to ActionPhaseScreen if you rename!
+            builder: (_) => ActionPhaseScreen(
               roomCode: args['roomCode'],
               playerName: args['playerName'],
+              isHost: args['isHost'],
             ),
           );
         }
-        return null; // uses home otherwise
+        if (settings.name == '/ejection') {
+          final args = settings.arguments as Map<String, dynamic>;
+          return MaterialPageRoute(
+            builder: (_) => EjectionScreen(
+              roomCode: args['roomCode'],
+              playerName: args['playerName'],
+              isHost: args['isHost'],
+            ),
+          );
+        }
+        // Add more routes if you need them
+        return null;
       },
-      home: const HomeScreen(),
-    ),
     );
   }
 }
 
-// Consider moving this out to screens/home_screen.dart for modularity
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
@@ -77,22 +85,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-        theme: ThemeData(
-        primarySwatch: Colors.grey, // Dark theme base color
-        brightness: Brightness.dark, // Setting the brightness to dark
-        scaffoldBackgroundColor: Colors.black87, // Dark background color for the whole app
-        cardColor: Colors.blueGrey[900], // Color of cards like dialogs or bottom sheets
-        textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: Colors.white), // Text color in light mode
-    bodySmall: TextStyle(color: Colors.white70),
-    bodyMedium: TextStyle(color: Colors.white70),
-    titleLarge: TextStyle(color: Colors.white70),
-    titleMedium: TextStyle(color: Colors.white70),
-    titleSmall: TextStyle(color: Colors.white70),
-    ),
-    ),
-    home: Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: const Text('Among Us IRL'),
         centerTitle: true,
@@ -103,14 +96,13 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-
               const Text(
                 'Play Among Us in Real Life!',
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
               const Text(
-                'Get ready for an epic game of Among Us played in real life! Complete tasks, kill players (if you''re the imposter), and vote out players to win the game.',
+                'Get ready for an epic game of Among Us played in real life! Complete tasks, kill players (if you\'re the imposter), and vote out players to win the game.',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
@@ -128,7 +120,6 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
       ),
-    ),
     );
   }
 }

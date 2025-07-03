@@ -1,13 +1,17 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
+import 'ejection_screen.dart';
+
 class VotingScreen extends StatefulWidget {
   final String roomCode;
   final String playerName;
+  final bool isHost;
 
   const VotingScreen({
     required this.roomCode,
     required this.playerName,
+    required this.isHost,
     Key? key,
   }) : super(key: key);
 
@@ -74,10 +78,34 @@ class _VotingScreenState extends State<VotingScreen> {
           final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
           final votes = Map<String, String>.from(data['votes'] ?? {});
           final phase = data['phase'];
+          if (phase == 'ejection' && !_navigated) {
+            _navigated = true;
+            Future.microtask(() {
+              if (!mounted) return;
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => EjectionScreen(
+                    roomCode: widget.roomCode,
+                    playerName: widget.playerName,
+                    isHost: widget.isHost,
+                  ),
+                ),
+              );
+            });
+          }
 
-          _checkIfAllVoted(data); // Trigger the navigation check
+          int alivePlayers = players.where((p) => p['role'] != 'dead').length;
+          if (phase == 'voting' && votes.length >= alivePlayers) {
+            // Only one client should do this - could use a field like `phase_updated` or do a transaction/check
+            if (widget.isHost) {
+              gameRef.update({'phase': 'ejection'});
+            }
+          }
 
-          final alivePlayers = players.where((p) => p['role'] != 'dead').toList();
+          // _checkIfAllVoted(data); // Trigger the navigation check
+
+          final alivePlayersMap = players.where((p) => p['role'] != 'dead').toList();
 
           return Padding(
             padding: const EdgeInsets.all(16),
@@ -91,7 +119,7 @@ class _VotingScreenState extends State<VotingScreen> {
                 Expanded(
                   child: ListView(
                     children: [
-                      ...alivePlayers.map((p) {
+                      ...alivePlayersMap.map((p) {
                         final name = p['name'];
                         return RadioListTile<String>(
                           title: Row(

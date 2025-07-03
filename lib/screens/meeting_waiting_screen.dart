@@ -8,8 +8,9 @@ import 'voting_screen.dart'; // Not used in this file
 class MeetingWaitingScreen extends StatefulWidget {
   final String roomCode;
   final String playerName;
+  final bool isHost;
 
-  const MeetingWaitingScreen({required this.roomCode, required this.playerName, Key? key}) : super(key: key);
+  const MeetingWaitingScreen({required this.roomCode, required this.playerName, required this.isHost, Key? key}) : super(key: key);
 
   @override
   State<MeetingWaitingScreen> createState() => _MeetingWaitingScreenState();
@@ -108,7 +109,7 @@ class _MeetingWaitingScreenState extends State<MeetingWaitingScreen> {
       // This is a key part: if an external process (like a Cloud Function after deadline)
       // changes the phase, this screen will navigate.
       if (phase == 'ejection' || phase == 'results') {
-        _navigateOnce(EjectionScreen(roomCode: widget.roomCode, playerName: widget.playerName));
+        _navigateOnce(EjectionScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost));
       }
 
       // If voting_deadline is updated dynamically (e.g. admin extends time), re-init countdown
@@ -209,7 +210,7 @@ class _MeetingWaitingScreenState extends State<MeetingWaitingScreen> {
               if (secondsLeft <= 0 && !_hasNavigated) {
                 // _navigateOnce handles the actual Navigator.pushReplacement
                 // and ensures it only happens once.
-                _navigateOnce(EjectionScreen(roomCode: widget.roomCode, playerName: widget.playerName));
+                _navigateOnce(EjectionScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost));
 
                 // While navigation is pending (it happens in a post-frame callback),
                 // show a loading message. The build method MUST return a widget.

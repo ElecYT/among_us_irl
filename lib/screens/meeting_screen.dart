@@ -10,10 +10,12 @@ import 'ejection_screen.dart';
 class MeetingScreen extends StatefulWidget {
   final String roomCode;
   final String playerName;
+  final bool isHost;
 
   const MeetingScreen({
     required this.roomCode,
     required this.playerName,
+    required this.isHost,
     super.key,
   });
 
@@ -111,10 +113,10 @@ class _MeetingScreenState extends State<MeetingScreen> {
               final now = DateTime.now();
               if (deadline != null && now.isAfter(deadline)) {
                 // Voting deadline over, go to ejection
-                _navigateOnce(context, EjectionScreen(roomCode: widget.roomCode, playerName: widget.playerName));
+                _navigateOnce(context, EjectionScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost));
                 return const Center(child: Text('Voting ended. Navigating to Ejection...'));
               } else {
-                _navigateOnce(context, VotingScreen(roomCode: widget.roomCode, playerName: widget.playerName));
+                _navigateOnce(context, VotingScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost));
                 return const Center(child: Text('Navigating to Voting Screen...'));
               }
             } else {
