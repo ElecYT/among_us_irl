@@ -87,7 +87,7 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Among Us IRL'),
+        title: const Text('Among Us IRL - beta-0.7.6'),
         centerTitle: true,
       ),
       body: Center(

@@ -36907,7 +36907,7 @@ A.dN(a).iF(s)},
 a6P(a){var s=A.et(new A.a0L(),null,t.z)
 A.dN(a).iF(s)},
 L(a){var s=null
-return A.ih(A.l4(!0,s,B.TF),s,A.fu(new A.bZ(B.j_,A.h8(A.b([B.TC,B.Te,B.yH,A.hV(B.zb,new A.a0M(this,a)),B.eR,A.hV(B.Tv,new A.a0N(this,a))],t.D),B.ak,B.cE,B.aW),s),s,s))}}
+return A.ih(A.l4(!0,s,B.Th),s,A.fu(new A.bZ(B.j_,A.h8(A.b([B.TD,B.Te,B.yH,A.hV(B.zb,new A.a0M(this,a)),B.eR,A.hV(B.Tw,new A.a0N(this,a))],t.D),B.ak,B.cE,B.aW),s),s,s))}}
 A.a0K.prototype={
 $1(a){return B.F3},
 $S:263}
@@ -37034,8 +37034,8 @@ m=o.h(0,"tasks")
 l=A.cO(m==null?[]:m,!0,q)
 j.xt(p)
 if(J.d(r,"meeting"))A.ro(a,A.et(new A.acE(j),k,t.z))
-q=A.hV(B.Tu,n?k:new A.acF(j,a))
-j=A.b([B.Tz,q,B.bG,A.hV(B.TG,n?k:j.ga06()),B.kF,B.TJ,A.HO(A.atr(new A.acG(j,l,n,p),l.length),1)],t.D)
+q=A.hV(B.Tv,n?k:new A.acF(j,a))
+j=A.b([B.TA,q,B.bG,A.hV(B.TG,n?k:j.ga06()),B.kF,B.TJ,A.HO(A.atr(new A.acG(j,l,n,p),l.length),1)],t.D)
 if(n)j.push(B.KA)
 return new A.bZ(B.ed,A.h8(j,B.ak,B.bb,B.aW),k)},
 $S:530}
@@ -37213,7 +37213,7 @@ if(o.j(r,"action")){A.asY(new A.afz(this.a,a),t.a)
 return B.yJ}if(o.j(r,"action"))A.ro(a,A.et(new A.afA(this.a),p,t.z))
 o=this.a
 q=A.bT(o.w,p,p,p,B.Rm,B.cL,p)
-return A.ih(p,B.C,A.fu(new A.bZ(B.j_,A.h8(A.b([q,B.kF,A.hV(B.Tj,o.d?p:o.ga0T())],t.D),B.ak,B.cE,B.aW),p),p,p))},
+return A.ih(p,B.C,A.fu(new A.bZ(B.j_,A.h8(A.b([q,B.kF,A.hV(B.Tk,o.d?p:o.ga0T())],t.D),B.ak,B.cE,B.aW),p),p,p))},
 $S:507}
 A.afz.prototype={
 $0(){var s,r=this.a
@@ -37297,7 +37297,7 @@ s=A.ab9(o.d,B.nf,!o.r,n,20,n,B.kM)
 r=o.r
 q=r?n:o.gaew()
 p=t.D
-q=A.b([B.Tw,B.yG,k,B.eR,B.Tl,B.yH,s,B.bG,A.hV(r?B.NO:B.Tk,q)],p)
+q=A.b([B.Tx,B.yG,k,B.eR,B.Tm,B.yH,s,B.bG,A.hV(r?B.NO:B.Tl,q)],p)
 k=o.f
 if(k!=null)B.b.S(q,A.b([B.bG,A.bT(k,n,n,n,B.z9,n,n)],p))
 return A.re(!0,A.ih(l,n,A.fu(new A.bZ(B.Ew,A.h8(q,B.ak,B.cE,B.aW),n),n,n)),n,m,"")}}
@@ -37384,7 +37384,7 @@ r=A.ab9(n.e,B.nf,!n.r,m,20,new A.ahb(n),B.kM)
 q=n.r
 p=q?m:n.gahP()
 o=t.D
-p=A.b([s,B.bG,r,B.bG,A.hV(q?B.NR:B.TB,p)],o)
+p=A.b([s,B.bG,r,B.bG,A.hV(q?B.NR:B.TC,p)],o)
 s=n.f
 if(s!=null)B.b.S(p,A.b([B.bG,A.bT(s,m,m,m,B.z9,m,m)],o))
 return A.re(!0,A.ih(k,m,new A.bZ(B.j_,A.h8(p,B.ak,B.cE,B.aW),m)),m,l,"")}}
@@ -37463,13 +37463,13 @@ n=A.b([],o)
 if(j.a.d){m=j.d
 l=t.xs
 l=A.Y(new A.Z(A.b([1,2,3],t.t),new A.ahD(),l),l.i("af.E"))
-B.b.S(n,A.b([B.yI,B.To,B.Tt,new A.qz(l,m,new A.ahE(j,this.b),k,t.CB)],o))}if(!j.a.d)n.push(B.KB)
+B.b.S(n,A.b([B.yI,B.Tp,B.Tu,new A.qz(l,m,new A.ahE(j,this.b),k,t.CB)],o))}if(!j.a.d)n.push(B.KB)
 n.push(B.kF)
-n.push(B.Ts)
+n.push(B.Tt)
 o=r.length
 n.push(A.HO(o===0?B.C3:A.atr(new A.ahF(r),o),1))
-n.push(B.Th)
-n.push(B.Tm)
+n.push(B.Ti)
+n.push(B.Tn)
 if(j.a.d){o=r.length
 m=j.d
 o=o<m+1
@@ -37626,7 +37626,7 @@ s=this.a
 i=s.a
 if(f){s.Ml(a,new A.jF(i.c,i.d,i.e,h))
 return B.C6}else{s.Ml(a,new A.mA(i.c,i.d,i.e,h))
-return B.C4}}else return B.C5}f=A.b([B.TA,A.bT("Body reported by: "+o,h,h,h,h,h,h),A.bT("Dead Person: "+n,h,h,h,h,h,h),A.bT("Location: "+m,h,h,h,h,h,h),B.bG,B.TE,B.yI],t.D)
+return B.C4}}else return B.C5}f=A.b([B.TB,A.bT("Body reported by: "+o,h,h,h,h,h,h),A.bT("Dead Person: "+n,h,h,h,h,h,h),A.bT("Location: "+m,h,h,h,h,h,h),B.bG,B.TF,B.yI],t.D)
 B.b.S(f,new A.Z(q,new A.ai8(),A.X(q).i("Z<1,f>")))
 f.push(B.O4)
 f.push(A.fu(A.bT("Discussion Time Remaining: "+this.a.e+" seconds",h,h,h,B.R0,h,h),h,h))
@@ -37735,12 +37735,12 @@ s=t.P
 r=A.cO(s.a(A.fX(p.b.hC(),p.a)).h(0,"players"),!0,s)
 s=this.a
 B.b.xF(r,new A.ajG(s))
-p=A.b([B.TD,B.NP],t.D)
+p=A.b([B.TE,B.NP],t.D)
 B.b.S(p,new A.Z(r,new A.ajH(s),A.X(r).i("Z<1,f>")))
 p.push(B.eR)
 p.push(A.ab9(s.e,B.Fe,q,q,q,q,B.kM))
 p.push(B.eR)
-p.push(A.hV(B.Ti,s.gW8()))
+p.push(A.hV(B.Tj,s.gW8()))
 return new A.bZ(B.ed,A.h8(p,B.ak,B.bb,B.aW),q)},
 $S:69}
 A.ajG.prototype={
@@ -37853,8 +37853,8 @@ l=A.Y(new A.Z(j,new A.alZ(g),A.X(j).i("Z<1,f>")),t.l7)
 k=g.d
 l.push(A.apm(k,g.e?h:new A.am_(g),B.Td,"skip",q))
 q=A.HO(A.atq(l,h,h,!1),1)
-q=A.b([B.Tr,B.bG,q,A.hV(B.Tc,g.e?h:g.gab6()),B.bG],t.D)
-if(g.e)q.push(B.Tp)
+q=A.b([B.Ts,B.bG,q,A.hV(B.Tc,g.e?h:g.gab6()),B.bG],t.D)
+if(g.e)q.push(B.Tq)
 return new A.bZ(B.ed,A.h8(q,B.ak,B.bb,B.aW),h)},
 $S:69}
 A.alU.prototype={
@@ -83972,19 +83972,19 @@ B.dW=new A.Sj()
 B.BY=new A.Tv()
 B.ir=new A.W1(0,"pixel")
 B.C1=new A.vQ(null,null,null,null,null,null,null)
-B.Tn=new A.by("No players found in this room.",null,null,null,null,null,null,null,null)
-B.C2=new A.eG(B.a_,null,null,B.Tn,null)
+B.To=new A.by("No players found in this room.",null,null,null,null,null,null,null,null)
+B.C2=new A.eG(B.a_,null,null,B.To,null)
 B.TI=new A.by("No players yet.",null,null,null,null,null,null,null,null)
 B.C3=new A.eG(B.a_,null,null,B.TI,null)
-B.Tq=new A.by("Navigating to Voting Screen...",null,null,null,null,null,null,null,null)
-B.C4=new A.eG(B.a_,null,null,B.Tq,null)
+B.Tr=new A.by("Navigating to Voting Screen...",null,null,null,null,null,null,null,null)
+B.C4=new A.eG(B.a_,null,null,B.Tr,null)
 B.X0=new A.acO(0,"material")
 B.Cb=new A.lb(null,null,null,null,null,null,null,null)
 B.d3=new A.eG(B.a_,null,null,B.Cb,null)
 B.TH=new A.by("Waiting for voting deadline to be set...",null,null,null,null,null,null,null,null)
 B.C5=new A.eG(B.a_,null,null,B.TH,null)
-B.Tx=new A.by("Voting ended. Navigating to Ejection...",null,null,null,null,null,null,null,null)
-B.C6=new A.eG(B.a_,null,null,B.Tx,null)
+B.Ty=new A.by("Voting ended. Navigating to Ejection...",null,null,null,null,null,null,null,null)
+B.C6=new A.eG(B.a_,null,null,B.Ty,null)
 B.C7=new A.qb(null,null,null,null,null,null,null,null,null)
 B.C8=new A.vT(null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.lX=new A.du(0,B.r)
@@ -85671,8 +85671,8 @@ B.tT=new A.Jr(1,"landscape")
 B.Kz=new A.yJ(null)
 B.Eo=new A.aG(0,16,0,0)
 B.Rk=new A.j(!0,B.h9,null,null,null,null,null,B.aT,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.Ty=new A.by("You are dead. You can only complete tasks.",null,B.Rk,null,null,null,null,null,null)
-B.KA=new A.bZ(B.Eo,B.Ty,null)
+B.Tz=new A.by("You are dead. You can only complete tasks.",null,B.Rk,null,null,null,null,null,null)
+B.KA=new A.bZ(B.Eo,B.Tz,null)
 B.PZ=new A.j(!0,null,null,null,null,null,15,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
 B.TK=new A.by("Waiting for host to start game...",null,B.PZ,null,null,null,null,null,null)
 B.KB=new A.bZ(B.fC,B.TK,null)
@@ -86369,33 +86369,33 @@ B.cM=new A.j(!0,null,null,null,null,null,18,B.aT,null,null,null,null,null,null,n
 B.Te=new A.by("Get ready for an epic game of Among Us played in real life! Complete tasks, kill players (if you're the imposter), and vote out players to win the game.",null,B.cM,B.cL,null,null,null,null,null)
 B.Tf=new A.by("Start",null,null,null,null,null,null,null,null)
 B.Tg=new A.by("Return to Main Menu",null,null,null,null,null,null,null,null)
+B.Th=new A.by("Among Us IRL - beta-0.7.6",null,null,null,null,null,null,null,null)
 B.za=new A.j(!0,null,null,null,null,null,20,B.aT,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.Th=new A.by("How the Game works",null,B.za,null,null,null,null,null,null)
+B.Ti=new A.by("How the Game works",null,B.za,null,null,null,null,null,null)
 B.zb=new A.by("Host Game",null,null,null,null,null,null,null,null)
-B.Ti=new A.by("Submit Report",null,null,null,null,null,null,null,null)
-B.Tj=new A.by("Continue to Action Phase",null,null,null,null,null,null,null,null)
-B.Tk=new A.by("Create Game",null,null,null,null,null,null,null,null)
-B.Tl=new A.by('Share this code with your friends to join. You need to click the "create game" button before they may join.',null,null,null,null,null,null,null,null)
+B.Tj=new A.by("Submit Report",null,null,null,null,null,null,null,null)
+B.Tk=new A.by("Continue to Action Phase",null,null,null,null,null,null,null,null)
+B.Tl=new A.by("Create Game",null,null,null,null,null,null,null,null)
+B.Tm=new A.by('Share this code with your friends to join. You need to click the "create game" button before they may join.',null,null,null,null,null,null,null,null)
 B.Qf=new A.j(!0,null,null,null,null,null,18,B.q,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.Tm=new A.by("If you are a crewmate, you try to vote out the imposter or complete all the tasks before they kill everyone! If you are an imposter, you try not to arouse suspicion and kill people until there is the same number of crewmates as imposters! Report dead bodies as you find them.",null,B.Qf,null,null,null,null,null,null)
-B.To=new A.by("Recommended Imposter amounts: 4-8 players: 1, 9-11 players: 2, 12+ players: 3",null,B.cM,null,null,null,null,null,null)
-B.Tp=new A.by("Vote submitted. Waiting for others...",null,B.dA,null,null,null,null,null,null)
+B.Tn=new A.by("If you are a crewmate, you try to vote out the imposter or complete all the tasks before they kill everyone! If you are an imposter, you try not to arouse suspicion and kill people until there is the same number of crewmates as imposters! Report dead bodies as you find them.",null,B.Qf,null,null,null,null,null,null)
+B.Tp=new A.by("Recommended Imposter amounts: 4-8 players: 1, 9-11 players: 2, 12+ players: 3",null,B.cM,null,null,null,null,null,null)
+B.Tq=new A.by("Vote submitted. Waiting for others...",null,B.dA,null,null,null,null,null,null)
 B.RZ=new A.j(!0,null,null,null,null,null,18,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.Tr=new A.by("Tap a player to vote:",null,B.RZ,null,null,null,null,null,null)
-B.Ts=new A.by("Players in Room:",null,B.za,null,null,null,null,null,null)
-B.Tt=new A.by("Number of Imposters:",null,B.hL,null,null,null,null,null,null)
-B.Tu=new A.by("Report Dead Body",null,null,null,null,null,null,null,null)
-B.Tv=new A.by("Join Game",null,null,null,null,null,null,null,null)
+B.Ts=new A.by("Tap a player to vote:",null,B.RZ,null,null,null,null,null,null)
+B.Tt=new A.by("Players in Room:",null,B.za,null,null,null,null,null,null)
+B.Tu=new A.by("Number of Imposters:",null,B.hL,null,null,null,null,null,null)
+B.Tv=new A.by("Report Dead Body",null,null,null,null,null,null,null,null)
+B.Tw=new A.by("Join Game",null,null,null,null,null,null,null,null)
 B.SJ=new A.j(!0,null,null,null,null,null,20,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.Tw=new A.by("Room Code:",null,B.SJ,null,null,null,null,null,null)
-B.Tz=new A.by("Your goal as crewmate is to complete all tasks or vote out the imposter. Refrain from talking to crewmates, limiting discussion to meetings",null,B.cM,null,null,null,null,null,null)
-B.TA=new A.by("Return at once to the Dining Room to discuss.",null,B.cM,null,null,null,null,null,null)
-B.TB=new A.by("Join",null,null,null,null,null,null,null,null)
+B.Tx=new A.by("Room Code:",null,B.SJ,null,null,null,null,null,null)
+B.TA=new A.by("Your goal as crewmate is to complete all tasks or vote out the imposter. Refrain from talking to crewmates, limiting discussion to meetings",null,B.cM,null,null,null,null,null,null)
+B.TB=new A.by("Return at once to the Dining Room to discuss.",null,B.cM,null,null,null,null,null,null)
+B.TC=new A.by("Join",null,null,null,null,null,null,null,null)
 B.PH=new A.j(!0,null,null,null,null,null,24,B.aT,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.TC=new A.by("Play Among Us in Real Life!",null,B.PH,B.cL,null,null,null,null,null)
-B.TD=new A.by("Who is the dead player?",null,B.cM,null,null,null,null,null,null)
-B.TE=new A.by("Players:",null,B.cM,null,null,null,null,null,null)
-B.TF=new A.by("Among Us IRL",null,null,null,null,null,null,null,null)
+B.TD=new A.by("Play Among Us in Real Life!",null,B.PH,B.cL,null,null,null,null,null)
+B.TE=new A.by("Who is the dead player?",null,B.cM,null,null,null,null,null,null)
+B.TF=new A.by("Players:",null,B.cM,null,null,null,null,null,null)
 B.TG=new A.by("Call Emergency Meeting",null,null,null,null,null,null,null,null)
 B.TJ=new A.by("Your Tasks",null,B.cM,null,null,null,null,null,null)
 B.X_=new A.abI(0,"system")
