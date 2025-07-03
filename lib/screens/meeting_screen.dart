@@ -22,41 +22,27 @@ class MeetingScreen extends StatefulWidget {
 
 class _MeetingScreenState extends State<MeetingScreen> {
   late final DocumentReference<Map<String, dynamic>> gameRef;
-  int secondsRemaining = 15;
-  Timer? timer;
   bool _navigated = false;
 
   @override
   void initState() {
     super.initState();
     gameRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
+
+    // Host sets meeting start time / voting deadline once:
     if (widget.isHost) {
-      startDiscussionTimer();
+      _setMeetingStartTimestampAndDeadline();
     }
   }
 
-  void startDiscussionTimer() {
-    timer = Timer.periodic(const Duration(seconds: 1), (t) async {
-      if (!mounted) { // Check if the widget is still mounted
-        t.cancel();
-        return;
-      }
-      if (secondsRemaining <= 1) {
-        t.cancel();
-        await gameRef.update({
-          'phase': 'voting',
-          'voting_deadline': DateTime.now().add(const Duration(seconds: 60)).toIso8601String(),
-        });
-      } else {
-        setState(() => secondsRemaining--);
-      }
+  Future<void> _setMeetingStartTimestampAndDeadline() async {
+    final now = DateTime.now().toUtc();
+    final votingDeadline = now.add(const Duration(seconds: 15 + 60)); // 15s meeting + 60s voting
+    await gameRef.update({
+      'phase': 'meeting',
+      'meeting_start_timestamp': now.toIso8601String(),
+      'voting_deadline': votingDeadline.toIso8601String(),
     });
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
   }
 
   void _navigateOnce(BuildContext context, Widget screen) {
@@ -65,6 +51,19 @@ class _MeetingScreenState extends State<MeetingScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => screen));
     });
+  }
+
+  int _calculateSecondsRemaining(String meetingStartIso, String votingDeadlineIso) {
+    final meetingStart = DateTime.tryParse(meetingStartIso)?.toUtc();
+    final votingDeadline = DateTime.tryParse(votingDeadlineIso)?.toUtc();
+    if (meetingStart == null || votingDeadline == null) return 0;
+
+    final now = DateTime.now().toUtc();
+    final meetingDuration = votingDeadline.difference(meetingStart) - const Duration(seconds: 60);
+    final meetingEnd = meetingStart.add(meetingDuration);
+
+    final secondsLeft = meetingEnd.difference(now).inSeconds;
+    return secondsLeft > 0 ? secondsLeft : 0;
   }
 
   @override
@@ -87,25 +86,30 @@ class _MeetingScreenState extends State<MeetingScreen> {
           final location = report['location']?.toString() ?? 'Unknown';
           final phase = data['phase'] ?? 'waiting';
 
-          // 🚦 PHASE-DRIVEN NAVIGATION
+          final meetingStartIso = data['meeting_start_timestamp'] as String? ?? '';
+          final votingDeadlineIso = data['voting_deadline'] as String? ?? '';
+
           if (!_navigated) {
             if (phase == 'voting') {
-              final dynamic deadlineData = data['voting_deadline'];
-              if (deadlineData is String) {
-                final deadline = DateTime.tryParse(deadlineData);
-                final now = DateTime.now();
-                if (deadline != null && now.isAfter(deadline)) {
-                  // Voting time over, go to ejection
-                  _navigateOnce(context, EjectionScreen(
-                      roomCode: widget.roomCode,
-                      playerName: widget.playerName,
-                      isHost: widget.isHost));
+              if (votingDeadlineIso.isNotEmpty) {
+                final votingDeadline = DateTime.tryParse(votingDeadlineIso);
+                if (votingDeadline != null && DateTime.now().toUtc().isAfter(votingDeadline)) {
+                  _navigateOnce(
+                      context,
+                      EjectionScreen(
+                        roomCode: widget.roomCode,
+                        playerName: widget.playerName,
+                        isHost: widget.isHost,
+                      ));
                   return const Center(child: Text('Voting ended. Navigating to Ejection...'));
                 } else {
-                  _navigateOnce(context, VotingScreen(
-                      roomCode: widget.roomCode,
-                      playerName: widget.playerName,
-                      isHost: widget.isHost));
+                  _navigateOnce(
+                      context,
+                      VotingScreen(
+                        roomCode: widget.roomCode,
+                        playerName: widget.playerName,
+                        isHost: widget.isHost,
+                      ));
                   return const Center(child: Text('Navigating to Voting Screen...'));
                 }
               } else {
@@ -114,7 +118,10 @@ class _MeetingScreenState extends State<MeetingScreen> {
             }
           }
 
-          // Default: Show the discussion screen
+          // Calculate remaining meeting seconds based on timestamps
+          final secondsRemaining = _calculateSecondsRemaining(meetingStartIso, votingDeadlineIso);
+
+          // Default Meeting UI
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
