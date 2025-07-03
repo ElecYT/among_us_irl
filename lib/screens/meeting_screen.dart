@@ -37,13 +37,12 @@ class _MeetingScreenState extends State<MeetingScreen> {
 
   void startDiscussionTimer() {
     timer = Timer.periodic(const Duration(seconds: 1), (t) async {
-      if (!mounted) {
+      if (!mounted) { // Check if the widget is still mounted
         t.cancel();
         return;
       }
       if (secondsRemaining <= 1) {
         t.cancel();
-        // Only host sets voting phase/timer
         await gameRef.update({
           'phase': 'voting',
           'voting_deadline': DateTime.now().add(const Duration(seconds: 60)).toIso8601String(),
@@ -113,7 +112,6 @@ class _MeetingScreenState extends State<MeetingScreen> {
                 return const Center(child: Text('Waiting for voting deadline...'));
               }
             }
-            // If you ever support emergency skip: add more phase checks here!
           }
 
           // Default: Show the discussion screen
