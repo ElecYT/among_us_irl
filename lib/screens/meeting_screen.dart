@@ -23,7 +23,7 @@ class MeetingScreen extends StatefulWidget {
 
 class _MeetingScreenState extends State<MeetingScreen> {
   late final DocumentReference gameRef;
-  int secondsRemaining = 90;
+  int secondsRemaining = 15;
   Timer? timer;
   bool _hasNavigated = false;
 
