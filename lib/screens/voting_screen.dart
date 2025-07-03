@@ -18,6 +18,7 @@ class VotingScreen extends StatefulWidget {
 class _VotingScreenState extends State<VotingScreen> {
   String? selectedVote;
   bool _hasVoted = false;
+  bool _navigated = false;
 
   Future<void> _submitVote() async {
     if (selectedVote == null || _hasVoted) return;
@@ -31,6 +32,8 @@ class _VotingScreenState extends State<VotingScreen> {
   }
 
   void _checkIfAllVoted(Map<String, dynamic> data) {
+    if (_navigated) return;
+
     final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
     final votes = Map<String, String>.from(data['votes'] ?? {});
     final phase = data['phase'];
@@ -38,8 +41,8 @@ class _VotingScreenState extends State<VotingScreen> {
     final alivePlayers = players.where((p) => p['role'] != 'dead').length;
 
     if (phase == 'voting' && votes.length >= alivePlayers) {
-      // Delay just a bit to avoid race conditions
-      Future.delayed(const Duration(seconds: 1), () {
+      _navigated = true;
+      Future.delayed(const Duration(milliseconds: 500), () {
         if (!mounted) return;
         Navigator.pushReplacementNamed(
           context,
@@ -72,7 +75,7 @@ class _VotingScreenState extends State<VotingScreen> {
           final votes = Map<String, String>.from(data['votes'] ?? {});
           final phase = data['phase'];
 
-          _checkIfAllVoted(data);
+          _checkIfAllVoted(data); // Trigger the navigation check
 
           final alivePlayers = players.where((p) => p['role'] != 'dead').toList();
 
