@@ -22,6 +22,8 @@ class ActionPhaseScreen extends StatefulWidget {
 }
 
 class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
+  late final DocumentReference<Map<String, dynamic>> gameRef;
+  bool _navigated = false; // Make sure we don't navigate multiple times
   final List<String> allTasks = [
     'Test Back Door',
     'Test Front Door',
@@ -43,14 +45,44 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
     'Find a red object',
   ];
 
-  late final DocumentReference<Map<String, dynamic>> gameRef;
-
   @override
   void initState() {
     super.initState();
-    gameRef =
-        FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
+    gameRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
   }
+
+  List<Map<String, dynamic>> generateRandomTasks() {
+    final rand = Random();
+    final shuffled = allTasks.toList()..shuffle(rand);
+    return shuffled.take(6).map((task) => {'name': task, 'done': false}).toList();
+  }
+
+  Future<void> ensureTasksInitialized(List<Map<String, dynamic>> players) async {
+    bool updated = false;
+    final newPlayers = players.map((p) {
+      if (p['name'] == widget.playerName && (p['tasks'] == null || p['tasks'].isEmpty)) {
+        updated = true;
+        return { ...p, 'tasks': generateRandomTasks() };
+      }
+      return p;
+    }).toList();
+    if (updated) {
+      await gameRef.update({'players': newPlayers});
+    }
+  }
+
+  Future<void> checkCrewmateWin(List<Map<String, dynamic>> players) async {
+    final allDone = players.where((p) => p['role'] != 'imposter').every((p) {
+      final tasks = List<Map<String, dynamic>>.from(p['tasks'] ?? []);
+      return tasks.every((t) => t['done'] == true);
+    });
+    if (allDone) {
+      await gameRef.update({'phase': 'crewmates_win'});
+    }
+  }
+
+
+
 
   Future<void> _callEmergencyMeeting() async {
     await gameRef.update({
@@ -63,64 +95,8 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
     });
   }
 
-  void _navigateToMeeting(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MeetingScreen(
-          roomCode: widget.roomCode,
-          playerName: widget.playerName,
-          isHost: widget.isHost,
-        ),
-      ),
-    );
-  }
-
-  List<Map<String, dynamic>> generateRandomTasks() {
-    final rand = Random();
-    final shuffled = allTasks.toList()..shuffle(rand);
-    return shuffled.take(6).map((task) => {'name': task, 'done': false}).toList();
-  }
-
-  Future<void> ensureTasksInitialized(List<Map<String, dynamic>> players) async {
-    bool updated = false;
-
-    final newPlayers = players.map((p) {
-      if (p['name'] == widget.playerName && (p['tasks'] == null || p['tasks'].isEmpty)) {
-        updated = true;
-        return {
-          ...p,
-          'tasks': generateRandomTasks(),
-        };
-      }
-      return p;
-    }).toList();
-
-    if (updated) {
-      await gameRef.update({'players': newPlayers});
-    }
-  }
-
-  Future<void> checkCrewmateWin(List<Map<String, dynamic>> players) async {
-    final allDone = players.where((p) => p['role'] != 'imposter').every((p) {
-      final tasks = List<Map<String, dynamic>>.from(p['tasks'] ?? []);
-      return tasks.every((t) => t['done'] == true);
-    });
-
-    if (allDone) {
-      await gameRef.update({'phase': 'crewmates_win'});
-      final reportBodyScreen = ReportBodyScreen(
-          roomCode: widget.roomCode, playerName: widget.playerName);
-      reportBodyScreen.checkGameEnd(context, widget.roomCode);
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final reportBodyScreen = ReportBodyScreen(
-        roomCode: widget.roomCode, playerName: widget.playerName);
-    reportBodyScreen.checkGameEnd(context, widget.roomCode);
-
     return Scaffold(
       appBar: AppBar(
         title: Text('Action Phase - ${widget.playerName}'),
@@ -138,29 +114,58 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
           final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
           final currentPlayer = players.firstWhere(
                 (p) => p['name'] == widget.playerName,
-            orElse: () => {},
+            orElse: () => <String, dynamic>{},
           );
-
-          final isDead = currentPlayer['role'] == 'dead';
+          final isDead = currentPlayer.isNotEmpty && currentPlayer['role'] == 'dead';
           final tasks = List<Map<String, dynamic>>.from(currentPlayer['tasks'] ?? []);
 
-          // Ensure tasks are initialized
+          // Only fire this once per game session for task assignment
           ensureTasksInitialized(players);
 
-          if (phase == 'meeting') {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => MeetingScreen(
-                  roomCode: widget.roomCode,
-                  playerName: widget.playerName,
-                  isHost: widget.isHost,
-                ),
-              ),
-            );
+          // PHASE-BASED NAVIGATION BELOW:
+          if (!_navigated) {
+            if (phase == 'meeting') {
+              _navigated = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MeetingScreen(
+                      roomCode: widget.roomCode,
+                      playerName: widget.playerName,
+                      isHost: widget.isHost,
+                    ),
+                  ),
+                );
+              });
+              return const SizedBox();
+            } else if (phase == 'voting') {
+              // Optional: handle if game should force back to voting
+              _navigated = true;
+              // ... Navigate if you have a VotingScreen ...
+            } else if (phase == 'crewmates_win' || phase == 'imposters_win') {
+              _navigated = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => FinalScreen(
+                      roomCode: widget.roomCode,
+                      playerName: widget.playerName,
+                      isHost: widget.isHost,
+                      isCrewmatesWin: phase == 'crewmates_win',
+                    ),
+                  ),
+                );
+              });
+              return const SizedBox();
+            }
+            // (You can add more phase checks for ejection, etc if needed)
           }
 
-
+          // UI Section (alive or dead)
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(

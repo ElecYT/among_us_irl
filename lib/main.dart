@@ -39,8 +39,9 @@ class AmongUsApp extends StatelessWidget {
       ),
       home: const HomeScreen(),
       onGenerateRoute: (settings) {
-        if (settings.name == '/action') {
-          final args = settings.arguments as Map<String, dynamic>;
+        final args = settings.arguments as Map<String, dynamic>?;
+
+        if (settings.name == '/action' && args != null) {
           return MaterialPageRoute(
             builder: (_) => ActionPhaseScreen(
               roomCode: args['roomCode'],
@@ -49,8 +50,7 @@ class AmongUsApp extends StatelessWidget {
             ),
           );
         }
-        if (settings.name == '/ejection') {
-          final args = settings.arguments as Map<String, dynamic>;
+        if (settings.name == '/ejection' && args != null) {
           return MaterialPageRoute(
             builder: (_) => EjectionScreen(
               roomCode: args['roomCode'],
@@ -59,7 +59,7 @@ class AmongUsApp extends StatelessWidget {
             ),
           );
         }
-        // Add more routes if you need them
+        // Add more routes as needed
         return null;
       },
     );
@@ -87,12 +87,12 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Among Us IRL - beta-0.7.6'),
+        title: const Text('Among Us IRL - beta-0.8.1'),
         centerTitle: true,
       ),
       body: Center(
         child: Padding(
-          padding: const EdgeInsets.all(32.0),
+          padding: const EdgeInsets.all(32),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -101,6 +101,7 @@ class HomeScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 textAlign: TextAlign.center,
               ),
+              const SizedBox(height: 16),
               const Text(
                 'Get ready for an epic game of Among Us played in real life! Complete tasks, kill players (if you\'re the imposter), and vote out players to win the game.',
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),

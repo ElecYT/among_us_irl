@@ -1,9 +1,6 @@
 import 'dart:async';
-
-import 'package:among_us_irl/screens/report_body_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
 import 'voting_screen.dart';
 import 'ejection_screen.dart';
 
@@ -16,31 +13,37 @@ class MeetingScreen extends StatefulWidget {
     required this.roomCode,
     required this.playerName,
     required this.isHost,
-    super.key,
-  });
+    Key? key,
+  }) : super(key: key);
 
   @override
   State<MeetingScreen> createState() => _MeetingScreenState();
 }
 
 class _MeetingScreenState extends State<MeetingScreen> {
-  late final DocumentReference gameRef;
+  late final DocumentReference<Map<String, dynamic>> gameRef;
   int secondsRemaining = 15;
   Timer? timer;
-  bool _hasNavigated = false;
+  bool _navigated = false;
 
   @override
   void initState() {
     super.initState();
     gameRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
-    startDiscussionTimer();
+    if (widget.isHost) {
+      startDiscussionTimer();
+    }
   }
 
   void startDiscussionTimer() {
     timer = Timer.periodic(const Duration(seconds: 1), (t) async {
+      if (!mounted) {
+        t.cancel();
+        return;
+      }
       if (secondsRemaining <= 1) {
         t.cancel();
-        // Set voting phase and a deadline, one time
+        // Only host sets voting phase/timer
         await gameRef.update({
           'phase': 'voting',
           'voting_deadline': DateTime.now().add(const Duration(seconds: 60)).toIso8601String(),
@@ -58,46 +61,26 @@ class _MeetingScreenState extends State<MeetingScreen> {
   }
 
   void _navigateOnce(BuildContext context, Widget screen) {
-    if (_hasNavigated || !mounted) return;
-    _hasNavigated = true;
+    if (_navigated || !mounted) return;
+    _navigated = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => screen),
-      );
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => screen));
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final reportBodyScreen = ReportBodyScreen(roomCode: widget.roomCode, playerName: widget.playerName);
-    reportBodyScreen.checkGameEnd(context, widget.roomCode);
-    return MaterialApp(
-        theme: ThemeData(
-        primarySwatch: Colors.grey, // Dark theme base color
-        brightness: Brightness.dark, // Setting the brightness to dark
-        scaffoldBackgroundColor: Colors.black87, // Dark background color for the whole app
-        cardColor: Colors.blueGrey[900], // Color of cards like dialogs or bottom sheets
-        textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: Colors.white), // Text color in light mode
-    bodySmall: TextStyle(color: Colors.white70),
-    bodyMedium: TextStyle(color: Colors.white70),
-    titleLarge: TextStyle(color: Colors.white70),
-    titleMedium: TextStyle(color: Colors.white70),
-    titleSmall: TextStyle(color: Colors.white70),
-    ),
-    ),
-    home: Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: Text('Meeting - ${widget.playerName}'),
         centerTitle: true,
       ),
-      body: StreamBuilder<DocumentSnapshot>(
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
         stream: gameRef.snapshots(),
         builder: (context, snapshot) {
           if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
 
-          final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
+          final data = snapshot.data!.data() ?? {};
           final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
           final report = data['report'] as Map<String, dynamic>? ?? {};
           final reportedBy = report['reporter']?.toString() ?? 'Unknown';
@@ -105,27 +88,35 @@ class _MeetingScreenState extends State<MeetingScreen> {
           final location = report['location']?.toString() ?? 'Unknown';
           final phase = data['phase'] ?? 'waiting';
 
-          // Phase navigation
-          if (phase == 'voting') {
-            final dynamic deadlineData = data['voting_deadline'];
-            if (deadlineData is String) {
-              final deadline = DateTime.tryParse(deadlineData);
-              final now = DateTime.now();
-              if (deadline != null && now.isAfter(deadline)) {
-                // Voting deadline over, go to ejection
-                _navigateOnce(context, EjectionScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost));
-                return const Center(child: Text('Voting ended. Navigating to Ejection...'));
+          // 🚦 PHASE-DRIVEN NAVIGATION
+          if (!_navigated) {
+            if (phase == 'voting') {
+              final dynamic deadlineData = data['voting_deadline'];
+              if (deadlineData is String) {
+                final deadline = DateTime.tryParse(deadlineData);
+                final now = DateTime.now();
+                if (deadline != null && now.isAfter(deadline)) {
+                  // Voting time over, go to ejection
+                  _navigateOnce(context, EjectionScreen(
+                      roomCode: widget.roomCode,
+                      playerName: widget.playerName,
+                      isHost: widget.isHost));
+                  return const Center(child: Text('Voting ended. Navigating to Ejection...'));
+                } else {
+                  _navigateOnce(context, VotingScreen(
+                      roomCode: widget.roomCode,
+                      playerName: widget.playerName,
+                      isHost: widget.isHost));
+                  return const Center(child: Text('Navigating to Voting Screen...'));
+                }
               } else {
-                _navigateOnce(context, VotingScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost));
-                return const Center(child: Text('Navigating to Voting Screen...'));
+                return const Center(child: Text('Waiting for voting deadline...'));
               }
-            } else {
-              // Waiting for voting_deadline field to appear
-              return const Center(child: Text('Waiting for voting deadline to be set...'));
             }
+            // If you ever support emergency skip: add more phase checks here!
           }
 
-          // Default: show the meeting (discussion) UI
+          // Default: Show the discussion screen
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -167,7 +158,6 @@ class _MeetingScreenState extends State<MeetingScreen> {
           );
         },
       ),
-    ),
     );
   }
 }

@@ -35,31 +35,6 @@ class _VotingScreenState extends State<VotingScreen> {
     setState(() => _hasVoted = true);
   }
 
-  void _checkIfAllVoted(Map<String, dynamic> data) {
-    if (_navigated) return;
-
-    final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
-    final votes = Map<String, String>.from(data['votes'] ?? {});
-    final phase = data['phase'];
-
-    final alivePlayers = players.where((p) => p['role'] != 'dead').length;
-
-    if (phase == 'voting' && votes.length >= alivePlayers) {
-      _navigated = true;
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (!mounted) return;
-        Navigator.pushReplacementNamed(
-          context,
-          '/ejection',
-          arguments: {
-            'roomCode': widget.roomCode,
-            'playerName': widget.playerName,
-          },
-        );
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final gameRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
@@ -79,17 +54,17 @@ class _VotingScreenState extends State<VotingScreen> {
           final votes = Map<String, String>.from(data['votes'] ?? {});
           final phase = data['phase'];
 
-          // 1. Find current player
+          // Find current player info
           final currentPlayer = players.firstWhere(
                 (p) => p['name'] == widget.playerName,
             orElse: () => <String, dynamic>{},
           );
           final isDead = currentPlayer.isNotEmpty && currentPlayer['role'] == 'dead';
 
-          // 2. Always check: If phase is 'ejection', NAVIGATE AWAY (for all players)
+          // Phase-driven navigation to EjectionScreen when phase changes
           if (phase == 'ejection' && !_navigated) {
             _navigated = true;
-            Future.microtask(() {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
               Navigator.pushReplacement(
                 context,
@@ -105,30 +80,31 @@ class _VotingScreenState extends State<VotingScreen> {
             return const SizedBox();
           }
 
-          // 3. Find alive players
+          // Only show alive players for voting
           final alivePlayers = players.where((p) => p['role'] != 'dead').toList();
 
-          // 4. If phase is still 'voting', and every alive player has voted, the host should update to 'ejection'
-          if (phase == 'voting'
-              && votes.keys.toSet().containsAll(alivePlayers.map((p) => p['name']))
-              && widget.isHost
-          ) {
-            // Only the host does this! (If multiple clients, race is ok since it's idempotent.)
-            FirebaseFirestore.instance.collection('games').doc(widget.roomCode).update({'phase': 'ejection'});
+          // Host updates phase to 'ejection' when all alive players have voted
+          if (phase == 'voting' &&
+              votes.keys.toSet().containsAll(alivePlayers.map((p) => p['name'])) &&
+              widget.isHost) {
+            // Firestore update; idempotent so safe even if triggered multiple times
+            gameRef.update({'phase': 'ejection'});
           }
 
-          // 5. Show proper UI:
           if (isDead) {
             return Center(
               child: Text(
                 'You are dead. You cannot vote.',
-                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20),
+                style: const TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                ),
                 textAlign: TextAlign.center,
               ),
             );
           }
 
-          // 6. Only alive players see voting controls:
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
