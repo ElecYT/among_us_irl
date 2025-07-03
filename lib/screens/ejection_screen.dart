@@ -28,8 +28,7 @@ class _EjectionScreenState extends State<EjectionScreen> {
 
     setState(() => _isProcessing = true);
 
-    final roomRef =
-    FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
+    final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
 
     try {
       if (!tie && ejected != null && ejected != 'skip') {
@@ -57,8 +56,15 @@ class _EjectionScreenState extends State<EjectionScreen> {
         },
       );
     } catch (e) {
-      print("Error transitioning to action phase: $e");
-      setState(() => _isProcessing = false);
+      print("❌ Error transitioning to action phase: $e");
+
+      // ✅ Show an error to the user (optional)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to continue: $e')),
+      );
+    } finally {
+      // ✅ Always reset the flag so the button is clickable again
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
