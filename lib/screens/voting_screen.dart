@@ -78,6 +78,15 @@ class _VotingScreenState extends State<VotingScreen> {
           final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
           final votes = Map<String, String>.from(data['votes'] ?? {});
           final phase = data['phase'];
+
+          // 1. Find current player
+          final currentPlayer = players.firstWhere(
+                (p) => p['name'] == widget.playerName,
+            orElse: () => <String, dynamic>{},
+          );
+          final isDead = currentPlayer.isNotEmpty && currentPlayer['role'] == 'dead';
+
+          // 2. Always check: If phase is 'ejection', NAVIGATE AWAY (for all players)
           if (phase == 'ejection' && !_navigated) {
             _navigated = true;
             Future.microtask(() {
@@ -93,20 +102,33 @@ class _VotingScreenState extends State<VotingScreen> {
                 ),
               );
             });
+            return const SizedBox();
           }
 
-          int alivePlayers = players.where((p) => p['role'] != 'dead').length;
-          if (phase == 'voting' && votes.length >= alivePlayers) {
-            // Only one client should do this - could use a field like `phase_updated` or do a transaction/check
-            if (widget.isHost) {
-              gameRef.update({'phase': 'ejection'});
-            }
+          // 3. Find alive players
+          final alivePlayers = players.where((p) => p['role'] != 'dead').toList();
+
+          // 4. If phase is still 'voting', and every alive player has voted, the host should update to 'ejection'
+          if (phase == 'voting'
+              && votes.keys.toSet().containsAll(alivePlayers.map((p) => p['name']))
+              && widget.isHost
+          ) {
+            // Only the host does this! (If multiple clients, race is ok since it's idempotent.)
+            FirebaseFirestore.instance.collection('games').doc(widget.roomCode).update({'phase': 'ejection'});
           }
 
-          // _checkIfAllVoted(data); // Trigger the navigation check
+          // 5. Show proper UI:
+          if (isDead) {
+            return Center(
+              child: Text(
+                'You are dead. You cannot vote.',
+                style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold, fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+            );
+          }
 
-          final alivePlayersMap = players.where((p) => p['role'] != 'dead').toList();
-
+          // 6. Only alive players see voting controls:
           return Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -119,15 +141,10 @@ class _VotingScreenState extends State<VotingScreen> {
                 Expanded(
                   child: ListView(
                     children: [
-                      ...alivePlayersMap.map((p) {
+                      ...alivePlayers.map((p) {
                         final name = p['name'];
                         return RadioListTile<String>(
-                          title: Row(
-                            children: [
-                              Text(name),
-                              if (p['role'] == 'dead') const Icon(Icons.tag, color: Colors.red),
-                            ],
-                          ),
+                          title: Text(name),
                           value: name,
                           groupValue: selectedVote,
                           onChanged: _hasVoted ? null : (val) => setState(() => selectedVote = val),
