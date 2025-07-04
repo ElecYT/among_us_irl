@@ -1,13 +1,16 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'action_phase_screen.dart';
 
 class EjectionScreen extends StatefulWidget {
   final String roomCode;
   final String? playerName;
+  final bool isHost;
 
   const EjectionScreen({
     required this.roomCode,
     this.playerName,
+    required this.isHost,
     Key? key,
   }) : super(key: key);
 
@@ -16,21 +19,37 @@ class EjectionScreen extends StatefulWidget {
 }
 
 class _EjectionScreenState extends State<EjectionScreen> {
-  bool _isProcessing = false;
+  bool _hasProcessed = false; // To ensure elimination/phase update runs once
 
-  String? ejected;
-  bool tie = false;
-  List<Map<String, dynamic>> players = [];
-  String message = 'Processing...';
+  Future<void> _processEjection(Map<String, dynamic> data) async {
+    if (_hasProcessed || !widget.isHost) return;
 
-  Future<void> _continueToActionPhase() async {
-    if (_isProcessing) return;
+    final votes = Map<String, String>.from(data['votes'] ?? {});
+    final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
 
-    setState(() => _isProcessing = true);
+    // Tally votes
+    final tally = <String, int>{};
+    for (final vote in votes.values) {
+      tally[vote] = (tally[vote] ?? 0) + 1;
+    }
+
+    String? ejected;
+    int maxVotes = 0;
+    bool tie = false;
+    tally.forEach((key, count) {
+      if (count > maxVotes) {
+        ejected = key;
+        maxVotes = count;
+        tie = false;
+      } else if (count == maxVotes) {
+        tie = true;
+      }
+    });
 
     final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
 
     try {
+      // Apply elimination only if not tie/skip
       if (!tie && ejected != null && ejected != 'skip') {
         final updatedPlayers = players.map((p) {
           if (p['name'] == ejected) return {...p, 'role': 'dead'};
@@ -39,110 +58,124 @@ class _EjectionScreenState extends State<EjectionScreen> {
 
         await roomRef.update({'players': updatedPlayers});
       }
+      await Future.delayed(const Duration(seconds: 3));
+      // then update Firestore phase to 'action'
+      // Advance phase to 'action' after applying elimination
+      await roomRef.update({'votes': {}, 'phase': 'action'});
 
-      await roomRef.update({
-        'votes': {},
-        'phase': 'action',
-      });
-
-      if (!mounted) return;
-
-      Navigator.pushReplacementNamed(
-        context,
-        '/action',
-        arguments: {
-          'roomCode': widget.roomCode,
-          'playerName': widget.playerName,
-        },
-      );
+      _hasProcessed = true;
     } catch (e) {
-      print("❌ Error transitioning to action phase: $e");
-
-      // ✅ Show an error to the user (optional)
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to continue: $e')),
-      );
-    } finally {
-      // ✅ Always reset the flag so the button is clickable again
-      if (mounted) setState(() => _isProcessing = false);
+      print("Error processing ejection: $e");
+      // Optionally show error in UI here
     }
-  }
-
-  Future<void> _loadData() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('games')
-        .doc(widget.roomCode)
-        .get();
-
-    final data = snapshot.data() as Map<String, dynamic>? ?? {};
-    final votes = Map<String, String>.from(data['votes'] ?? {});
-    final playerList = List<Map<String, dynamic>>.from(data['players'] ?? []);
-
-    // Save for button use
-    players = playerList;
-
-    // Tally votes
-    final tally = <String, int>{};
-    for (final vote in votes.values) {
-      tally[vote] = (tally[vote] ?? 0) + 1;
-    }
-
-    // Determine ejected
-    String? result;
-    int maxVotes = 0;
-    bool isTie = false;
-    tally.forEach((key, count) {
-      if (count > maxVotes) {
-        result = key;
-        maxVotes = count;
-        isTie = false;
-      } else if (count == maxVotes) {
-        isTie = true;
-      }
-    });
-
-    setState(() {
-      ejected = result;
-      tie = isTie;
-      message = (tie || ejected == null || ejected == 'skip')
-          ? 'No one was ejected.'
-          : '$ejected was ejected.';
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _loadData();
   }
 
   @override
   Widget build(BuildContext context) {
+    final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
+
     return Scaffold(
       backgroundColor: Colors.black87,
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                message,
-                style: const TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+      body: StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+        stream: roomRef.snapshots(),
+        builder: (context, snapshot) {
+          if (!snapshot.hasData) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final data = snapshot.data!.data() ?? {};
+          final phase = data['phase'] ?? '';
+          final votes = Map<String, String>.from(data['votes'] ?? {});
+          final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
+
+          // React to phase changes
+          if (phase == 'action') {
+            // Navigate to action phase screen automatically
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!mounted) return;
+              Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ActionPhaseScreen(
+                    roomCode: widget.roomCode,
+                    playerName: widget.playerName ?? '',
+                    isHost: widget.isHost,
+                  ),
                 ),
-                textAlign: TextAlign.center,
+              );
+            });
+            return const SizedBox();
+          }
+
+          if (phase == 'ejection') {
+            // Process elimination + phase advance automatically (only host)
+            _processEjection(data);
+
+            // Tally votes for message
+            final tally = <String, int>{};
+            for (final vote in votes.values) {
+              tally[vote] = (tally[vote] ?? 0) + 1;
+            }
+            String? ejected;
+            int maxVotes = 0;
+            bool tie = false;
+            tally.forEach((key, count) {
+              if (count > maxVotes) {
+                ejected = key;
+                maxVotes = count;
+                tie = false;
+              } else if (count == maxVotes) {
+                tie = true;
+              }
+            });
+
+            final message = (tie || ejected == null || ejected == 'skip')
+                ? 'No one was ejected.'
+                : '$ejected was ejected.';
+
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(32),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      message,
+                      style: const TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 24),
+                    if (widget.isHost)
+                      const Text(
+                        'Waiting for phase to advance to Action...',
+                        style: TextStyle(color: Colors.white70),
+                        textAlign: TextAlign.center,
+                      )
+                    else
+                      const Text(
+                        'Waiting for host to advance phase...',
+                        style: TextStyle(color: Colors.white70),
+                        textAlign: TextAlign.center,
+                      ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isProcessing ? null : _continueToActionPhase,
-                child: const Text("Continue to Action Phase"),
-              ),
-            ],
-          ),
-        ),
+            );
+          }
+
+          // Default fallback in case player somehow ends up here
+          return const Center(
+            child: Text(
+              'Waiting for ejection phase to start...',
+              style: TextStyle(color: Colors.white70),
+              textAlign: TextAlign.center,
+            ),
+          );
+        },
       ),
     );
   }

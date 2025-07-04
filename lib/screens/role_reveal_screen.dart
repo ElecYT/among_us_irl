@@ -6,10 +6,12 @@ import 'action_phase_screen.dart';
 class RoleRevealScreen extends StatelessWidget {
   final String roomCode;
   final String playerName;
+  final bool isHost;
 
   const RoleRevealScreen({
     required this.roomCode,
     required this.playerName,
+    required this.isHost,
     super.key,
   });
 
@@ -87,6 +89,7 @@ class RoleRevealScreen extends StatelessWidget {
                         builder: (context) => ActionPhaseScreen(
                           roomCode: roomCode,
                           playerName: playerName,
+                          isHost: isHost,
                         ),
                       ),
                     );

@@ -76,15 +76,15 @@ class _LobbyScreenState extends State<LobbyScreen> {
 
             if (phase == 'role_reveal') {
               doNavigate(
-                    () => RoleRevealScreen(roomCode: widget.roomCode, playerName: widget.playerName),
+                    () => RoleRevealScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost),
               );
             } else if (phase == 'action') {
               doNavigate(
-                    () => ActionPhaseScreen(roomCode: widget.roomCode, playerName: widget.playerName),
+                    () => ActionPhaseScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost),
               );
             } else if (phase == 'voting') {
               doNavigate(
-                    () => VotingScreen(roomCode: widget.roomCode, playerName: widget.playerName),
+                    () => VotingScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost),
               );
             }
 
@@ -94,10 +94,6 @@ class _LobbyScreenState extends State<LobbyScreen> {
                 children: [
                   if (widget.isHost) ...[
                     const SizedBox(height: 8),
-                    const Text(
-                      'Recommended Imposter amounts: 4-8 players: 1, 9-11 players: 2, 12+ players: 3',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
                     const Text(
                       'Number of Imposters:',
                       style: TextStyle(fontWeight: FontWeight.bold),
@@ -138,14 +134,6 @@ class _LobbyScreenState extends State<LobbyScreen> {
                         title: Text(players[idx]['name'] ?? '-'),
                       ),
                     ),
-                  ),
-                  const Text(
-                    'How the Game works',
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                  const Text(
-                    'If you are a crewmate, you try to vote out the imposter or complete all the tasks before they kill everyone! If you are an imposter, you try not to arouse suspicion and kill people until there is the same number of crewmates as imposters! Report dead bodies as you find them.',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.normal),
                   ),
                   if (widget.isHost)
                     ElevatedButton(

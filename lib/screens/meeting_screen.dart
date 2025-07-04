@@ -10,10 +10,11 @@ import 'ejection_screen.dart';
 class MeetingScreen extends StatefulWidget {
   final String roomCode;
   final String playerName;
-
+  final bool isHost;
   const MeetingScreen({
     required this.roomCode,
     required this.playerName,
+    required this.isHost,
     super.key,
   });
 
@@ -23,7 +24,7 @@ class MeetingScreen extends StatefulWidget {
 
 class _MeetingScreenState extends State<MeetingScreen> {
   late final DocumentReference gameRef;
-  int secondsRemaining = 15;
+  int secondsRemaining = 90;
   Timer? timer;
   bool _hasNavigated = false;
 
@@ -111,10 +112,10 @@ class _MeetingScreenState extends State<MeetingScreen> {
               final now = DateTime.now();
               if (deadline != null && now.isAfter(deadline)) {
                 // Voting deadline over, go to ejection
-                _navigateOnce(context, EjectionScreen(roomCode: widget.roomCode, playerName: widget.playerName));
+                _navigateOnce(context, EjectionScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost));
                 return const Center(child: Text('Voting ended. Navigating to Ejection...'));
               } else {
-                _navigateOnce(context, VotingScreen(roomCode: widget.roomCode, playerName: widget.playerName));
+                _navigateOnce(context, VotingScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost));
                 return const Center(child: Text('Navigating to Voting Screen...'));
               }
             } else {
@@ -129,12 +130,8 @@ class _MeetingScreenState extends State<MeetingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Return at once to the Dining Room to discuss.',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Text('Body reported by: $reportedBy'),
-                Text('Dead Person: $deadPlayer'),
+                Text('Reported by: $reportedBy'),
+                Text('Body found: $deadPlayer'),
                 Text('Location: $location'),
                 const SizedBox(height: 16),
                 const Text('Players:', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
