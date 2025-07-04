@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -21,12 +23,25 @@ class ActionPhaseScreen extends StatefulWidget {
 }
 
 class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
-  final List<String> dummyTasks = const [
-    'Swipe card',
-    'Fix wiring',
-    'Upload data',
-    'Align engine',
-    'Inspect sample',
+  final List<String> allTasks = [
+    'Test Back Door',
+    'Test Front Door',
+    'Test Upstairs Bathroom Sink',
+    'Test Downstairs Bathroom Sink',
+    'Test Kitchen Cabinet',
+    'Test Garage Door (In basement)',
+    'Test Hose (In the front yard)',
+    'Sweep the perimeter of the house',
+    'Close and open all downstairs doors',
+    'Tell someone about your day',
+    'Find towels in the Kitchen',
+    'Find the back pantry',
+    'Open all the kitchen cabinets',
+    'Close all the kitchen cabinets',
+    'Interrogate someone',
+    'Take a 10 second nap on the couch',
+    'Pickup something on the floor',
+    'Find a red object',
   ];
 
   late final DocumentReference<Map<String, dynamic>> gameRef;
@@ -49,6 +64,45 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
     });
   }
 
+  List<Map<String, dynamic>> generateRandomTasks() {
+    final rand = Random();
+    final shuffled = allTasks.toList()..shuffle(rand);
+    return shuffled.take(6).map((task) => {'name': task, 'done': false}).toList();
+  }
+
+  Future<void> ensureTasksInitialized(List<Map<String, dynamic>> players) async {
+    bool updated = false;
+
+    final newPlayers = players.map((p) {
+      if (p['name'] == widget.playerName && (p['tasks'] == null || p['tasks'].isEmpty)) {
+        updated = true;
+        return {
+          ...p,
+          'tasks': generateRandomTasks(),
+        };
+      }
+      return p;
+    }).toList();
+
+    if (updated) {
+      await gameRef.update({'players': newPlayers});
+    }
+  }
+
+  Future<void> checkCrewmateWin(List<Map<String, dynamic>> players) async {
+    final allDone = players.where((p) => p['role'] != 'imposter').every((p) {
+      final tasks = List<Map<String, dynamic>>.from(p['tasks'] ?? []);
+      return tasks.every((t) => t['done'] == true);
+    });
+
+    if (allDone) {
+      await gameRef.update({'phase': 'crewmates_win'});
+      final reportBodyScreen = ReportBodyScreen(
+          roomCode: widget.roomCode, playerName: widget.playerName);
+      reportBodyScreen.checkGameEnd(context, widget.roomCode);
+    }
+  }
+
   void _navigateToMeeting(BuildContext context) {
     Navigator.pushReplacement(
       context,
@@ -66,22 +120,7 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
   Widget build(BuildContext context) {
     final reportBodyScreen = ReportBodyScreen(roomCode: widget.roomCode, playerName: widget.playerName);
     reportBodyScreen.checkGameEnd(context, widget.roomCode);
-    return MaterialApp(
-        theme: ThemeData(
-        primarySwatch: Colors.grey, // Dark theme base color
-        brightness: Brightness.dark, // Setting the brightness to dark
-        scaffoldBackgroundColor: Colors.black87, // Dark background color for the whole app
-        cardColor: Colors.blueGrey[900], // Color of cards like dialogs or bottom sheets
-        textTheme: const TextTheme(
-        bodyLarge: TextStyle(color: Colors.white), // Text color in light mode
-    bodySmall: TextStyle(color: Colors.white70),
-    bodyMedium: TextStyle(color: Colors.white70),
-    titleLarge: TextStyle(color: Colors.white70),
-    titleMedium: TextStyle(color: Colors.white70),
-    titleSmall: TextStyle(color: Colors.white70),
-    ),
-    ),
-    home: Scaffold(
+    return Scaffold(
       appBar: AppBar(
         title: Text('Action Phase - ${widget.playerName}'),
         centerTitle: true,
@@ -101,6 +140,10 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
             orElse: () => {},
           );
           final isDead = currentPlayer['role'] == 'dead';
+          final tasks = List<Map<String, dynamic>>.from(currentPlayer['tasks'] ?? []);
+
+          // Ensure tasks are initialized
+          ensureTasksInitialized(players);
 
           // If phase changed to meeting, auto-nav (once)
           if (phase == 'meeting') {
@@ -136,16 +179,50 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
                   child: const Text('Call Emergency Meeting'),
                 ),
                 const SizedBox(height: 24),
-                const Text('Dummy Task List:', style: TextStyle(fontWeight: FontWeight.bold)),
-                ...dummyTasks.map((task) => ListTile(
-                  leading: const Icon(Icons.check_box_outline_blank),
-                  title: Text(task),
-                )),
+                const Text(
+                  'Your Tasks',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: tasks.length,
+                    itemBuilder: (context, index) {
+                      final task = tasks[index];
+                      return CheckboxListTile(
+                        title: Text(task['name']),
+                        value: task['done'],
+                        onChanged: isDead
+                            ? null
+                            : (bool? checked) async {
+                          final updatedTask = {
+                            ...task,
+                            'done': checked ?? false,
+                          };
+                          final updatedTasks = [...tasks];
+                          updatedTasks[index] = updatedTask;
+
+                          final updatedPlayers = players.map((p) {
+                            if (p['name'] == widget.playerName) {
+                              return {
+                                ...p,
+                                'tasks': updatedTasks,
+                              };
+                            }
+                            return p;
+                          }).toList();
+
+                          await gameRef.update({'players': updatedPlayers});
+                          await checkCrewmateWin(updatedPlayers);
+                        },
+                      );
+                    },
+                  ),
+                ),
                 if (isDead)
                   const Padding(
                     padding: EdgeInsets.only(top: 32),
                     child: Text(
-                      'You are dead. You cannot complete tasks or report/call meetings.',
+                      'You are dead. You cannot report/call meetings.',
                       style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -154,7 +231,6 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
           );
         },
       ),
-    ),
     );
   }
 }
