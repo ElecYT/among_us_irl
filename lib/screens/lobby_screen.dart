@@ -80,11 +80,11 @@ class _LobbyScreenState extends State<LobbyScreen> {
               );
             } else if (phase == 'action') {
               doNavigate(
-                    () => ActionPhaseScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost),
+                    () => ActionPhaseScreen(roomCode: widget.roomCode, playerName: widget.playerName),
               );
             } else if (phase == 'voting') {
               doNavigate(
-                    () => VotingScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost),
+                    () => VotingScreen(roomCode: widget.roomCode, playerName: widget.playerName),
               );
             }
 

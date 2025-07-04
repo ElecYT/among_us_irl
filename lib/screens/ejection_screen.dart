@@ -1,17 +1,13 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
-import 'action_phase_screen.dart';
-
 class EjectionScreen extends StatefulWidget {
   final String roomCode;
-  final String playerName;
-  final bool isHost;
+  final String? playerName;
 
   const EjectionScreen({
     required this.roomCode,
-    required this.playerName,
-    required this.isHost,
+    this.playerName,
     Key? key,
   }) : super(key: key);
 
@@ -26,37 +22,49 @@ class _EjectionScreenState extends State<EjectionScreen> {
   bool tie = false;
   List<Map<String, dynamic>> players = [];
   String message = 'Processing...';
-  bool _navigated = false;
 
-  Future<void> _processEliminationIfHost() async {
-    if (!_isProcessing && widget.isHost) {
-      setState(() => _isProcessing = true);
+  Future<void> _continueToActionPhase() async {
+    if (_isProcessing) return;
 
-      final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
-      try {
-        await _loadData();  // Ensure you have latest tally
+    setState(() => _isProcessing = true);
 
-        // Only host applies elimination and advances phase
-        if (!tie && ejected != null && ejected != 'skip') {
-          final updatedPlayers = players.map((p) {
-            if (p['name'] == ejected) return {...p, 'role': 'dead'};
-            return p;
-          }).toList();
-          await roomRef.update({'players': updatedPlayers});
-        }
-        await roomRef.update({
-          'votes': {},
-          'phase': 'action',
-        });
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to process elimination: $e')),
-          );
-        }
-      } finally {
-        if (mounted) setState(() => _isProcessing = false);
+    final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
+
+    try {
+      if (!tie && ejected != null && ejected != 'skip') {
+        final updatedPlayers = players.map((p) {
+          if (p['name'] == ejected) return {...p, 'role': 'dead'};
+          return p;
+        }).toList();
+
+        await roomRef.update({'players': updatedPlayers});
       }
+
+      await roomRef.update({
+        'votes': {},
+        'phase': 'action',
+      });
+
+      if (!mounted) return;
+
+      Navigator.pushReplacementNamed(
+        context,
+        '/action',
+        arguments: {
+          'roomCode': widget.roomCode,
+          'playerName': widget.playerName,
+        },
+      );
+    } catch (e) {
+      print("❌ Error transitioning to action phase: $e");
+
+      // ✅ Show an error to the user (optional)
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to continue: $e')),
+      );
+    } finally {
+      // ✅ Always reset the flag so the button is clickable again
+      if (mounted) setState(() => _isProcessing = false);
     }
   }
 
@@ -70,6 +78,7 @@ class _EjectionScreenState extends State<EjectionScreen> {
     final votes = Map<String, String>.from(data['votes'] ?? {});
     final playerList = List<Map<String, dynamic>>.from(data['players'] ?? []);
 
+    // Save for button use
     players = playerList;
 
     // Tally votes
@@ -77,6 +86,7 @@ class _EjectionScreenState extends State<EjectionScreen> {
     for (final vote in votes.values) {
       tally[vote] = (tally[vote] ?? 0) + 1;
     }
+
     // Determine ejected
     String? result;
     int maxVotes = 0;
@@ -90,6 +100,7 @@ class _EjectionScreenState extends State<EjectionScreen> {
         isTie = true;
       }
     });
+
     setState(() {
       ejected = result;
       tie = isTie;
@@ -103,85 +114,36 @@ class _EjectionScreenState extends State<EjectionScreen> {
   void initState() {
     super.initState();
     _loadData();
-    // Let host auto-advance after a short delay for smoothness (or call from button)
-    if (widget.isHost) {
-      Future.delayed(const Duration(seconds: 2), _processEliminationIfHost);
-    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
-
-    return StreamBuilder<DocumentSnapshot>(
-      stream: roomRef.snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return Scaffold(
-            backgroundColor: Colors.black87,
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-
-        final data = snapshot.data!.data() as Map<String, dynamic>? ?? {};
-        final phase = data['phase'] ?? '';
-
-        // Universal phase-driven navigation with duplication guard
-        if (phase == 'action' && !_navigated) {
-          _navigated = true;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (!mounted) return;
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (_) => ActionPhaseScreen(
-                  roomCode: widget.roomCode,
-                  playerName: widget.playerName,
-                  isHost: widget.isHost,
+    return Scaffold(
+      backgroundColor: Colors.black87,
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(32),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                message,
+                style: const TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
+                textAlign: TextAlign.center,
               ),
-            );
-          });
-          return const SizedBox();
-        }
-
-        return Scaffold(
-          backgroundColor: Colors.black87,
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(32),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    message,
-                    style: const TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  if (widget.isHost) ...[
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: _isProcessing ? null : _processEliminationIfHost,
-                      child: const Text("Continue to Action Phase"),
-                    ),
-                  ],
-                  if (!widget.isHost) ...[
-                    const SizedBox(height: 24),
-                    ElevatedButton(
-                      onPressed: null,
-                      child: const Text("Waiting for host to continue..."),
-                    ),
-                  ],
-                ],
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: _isProcessing ? null : _continueToActionPhase,
+                child: const Text("Continue to Action Phase"),
               ),
-            ),
+            ],
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 }
