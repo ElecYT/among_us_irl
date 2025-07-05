@@ -42,7 +42,7 @@ class _MeetingScreenState extends State<MeetingScreen> {
         // Set voting phase and a deadline, one time
         await gameRef.update({
           'phase': 'voting',
-          'voting_deadline': DateTime.now().add(const Duration(seconds: 60)).toIso8601String(),
+          'voting_deadline': DateTime.now().add(const Duration(seconds: 15)).toIso8601String(),
         });
       } else {
         setState(() => secondsRemaining--);

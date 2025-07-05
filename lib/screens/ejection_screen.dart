@@ -61,8 +61,9 @@ class _EjectionScreenState extends State<EjectionScreen> {
       await Future.delayed(const Duration(seconds: 3));
       // then update Firestore phase to 'action'
       // Advance phase to 'action' after applying elimination
-      await roomRef.update({'votes': {}, 'phase': 'action'});
-
+      if (data['phase'] == 'ejection' && widget.isHost) {
+        await roomRef.update({'votes': {}, 'phase': 'action'});
+      }
       _hasProcessed = true;
     } catch (e) {
       print("Error processing ejection: $e");

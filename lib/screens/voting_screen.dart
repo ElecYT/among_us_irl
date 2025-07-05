@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:among_us_irl/screens/action_phase_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'meeting_waiting_screen.dart';
@@ -75,12 +76,32 @@ class _VotingScreenState extends State<VotingScreen> {
           final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
           final votes = Map<String, String>.from(data['votes'] ?? {});
           final phase = data['phase'] ?? '';
-
           final currentPlayer = players.firstWhere(
                 (p) => p['name'] == widget.playerName,
             orElse: () => <String, dynamic>{},
           );
           final isDead = currentPlayer.isNotEmpty && currentPlayer['role'] == 'dead';
+
+          if (isDead) {
+            if (!_navigated) {
+              _navigated = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                if (!mounted) return;
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => ActionPhaseScreen(
+                      roomCode: widget.roomCode,
+                      playerName: widget.playerName,
+                      isHost: widget.isHost,
+                    ),
+                  ),
+                );
+              });
+            }
+            return const SizedBox();
+          }
+
 
           // If phase changed to something other than voting, navigate out here
           // so user is never stuck on outdated screen

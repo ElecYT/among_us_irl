@@ -63,7 +63,9 @@ class _MeetingWaitingScreenState extends State<MeetingWaitingScreen> {
         if (secondsLeft <= 0) {
           timer.cancel();
           if (widget.isHost) {
-            await gameRef.update({'phase': 'ejection'});
+            if (data['phase'] == 'voting' && widget.isHost) {
+              await gameRef.update({'phase': 'ejection'});
+            }
           }
         } else {
           final doc = await gameRef.get();
@@ -76,7 +78,9 @@ class _MeetingWaitingScreenState extends State<MeetingWaitingScreen> {
 
           if (widget.isHost && votes.length >= aliveCount) {
             timer.cancel();
-            await gameRef.update({'phase': 'ejection'});
+            if (data['phase'] == 'voting' && widget.isHost) {
+              await gameRef.update({'phase': 'ejection'});
+            }
           }
         }
       });
