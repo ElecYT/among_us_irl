@@ -22,7 +22,7 @@ class MeetingWaitingScreen extends StatefulWidget {
 class _MeetingWaitingScreenState extends State<MeetingWaitingScreen> {
   late final DocumentReference<Map<String, dynamic>> gameRef;
   Timer? countdownTimer;
-  int secondsLeft = 60;
+  int secondsLeft = 70;
   bool _hasNavigated = false;
 
   @override

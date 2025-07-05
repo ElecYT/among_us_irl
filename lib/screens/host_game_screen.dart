@@ -139,7 +139,7 @@ class _HostGameScreenState extends State<HostGameScreen> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text('Share this code with your friends to join.'),
+                const Text('Share this code with your friends to join. You need to click the "create game" button before they may join.'),
                 const SizedBox(height: 40),
                 TextField(
                   controller: _nameController,

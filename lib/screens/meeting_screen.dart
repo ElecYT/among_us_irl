@@ -24,7 +24,7 @@ class MeetingScreen extends StatefulWidget {
 
 class _MeetingScreenState extends State<MeetingScreen> {
   late final DocumentReference gameRef;
-  int secondsRemaining = 90;
+  int secondsRemaining = 60;
   Timer? timer;
   bool _hasNavigated = false;
 
@@ -42,7 +42,7 @@ class _MeetingScreenState extends State<MeetingScreen> {
         // Set voting phase and a deadline, one time
         await gameRef.update({
           'phase': 'voting',
-          'voting_deadline': DateTime.now().add(const Duration(seconds: 15)).toIso8601String(),
+          'voting_deadline': DateTime.now().add(const Duration(seconds: 60)).toIso8601String(),
         });
       } else {
         setState(() => secondsRemaining--);
@@ -130,6 +130,7 @@ class _MeetingScreenState extends State<MeetingScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const Text('Return to the Living Room at once.', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                 Text('Reported by: $reportedBy'),
                 Text('Body found: $deadPlayer'),
                 Text('Location: $location'),
