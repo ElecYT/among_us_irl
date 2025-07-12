@@ -20,6 +20,7 @@ class EjectionScreen extends StatefulWidget {
 
 class _EjectionScreenState extends State<EjectionScreen> {
   bool _hasProcessed = false;
+  bool _hasNavigated = false;
 
   Future<void> _processEjection(Map<String, dynamic> data) async {
     if (_hasProcessed || !widget.isHost) return;
@@ -88,8 +89,9 @@ class _EjectionScreenState extends State<EjectionScreen> {
           final votes = Map<String, String>.from(data['votes'] ?? {});
           final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
 
-          if (phase == 'action') {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (phase == 'action' && !_hasNavigated) {
+            _hasNavigated = true;
+            Future.microtask(() {
               if (!mounted) return;
               Navigator.pushReplacement(
                 context,
@@ -104,6 +106,7 @@ class _EjectionScreenState extends State<EjectionScreen> {
             });
             return const SizedBox();
           }
+
 
           if (phase == 'ejection') {
             _processEjection(data);
