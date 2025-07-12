@@ -35,7 +35,7 @@ class AmongUsApp extends StatelessWidget {
     ),
     ),
     home: MaterialApp(
-      title: 'Among Us IRL - beta 0.8.5',
+      title: 'Among Us IRL',
       debugShowCheckedModeBanner: false,
       // You can use routes/table here, or just use push with MaterialPageRoute as elsewhere.
       onGenerateRoute: (settings) {
@@ -95,7 +95,7 @@ class HomeScreen extends StatelessWidget {
       ),
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Among Us IRL'),
+          title: const Text('Among Us IRL - beta 0.8.5'),
           centerTitle: true,
         ),
         body: Center(
