@@ -4,12 +4,12 @@ import 'action_phase_screen.dart';
 
 class EjectionScreen extends StatefulWidget {
   final String roomCode;
-  final String? playerName;
+  final String playerName;
   final bool isHost;
 
   const EjectionScreen({
     required this.roomCode,
-    this.playerName,
+    required this.playerName,
     required this.isHost,
     Key? key,
   }) : super(key: key);
@@ -99,7 +99,7 @@ class _EjectionScreenState extends State<EjectionScreen> {
                 MaterialPageRoute(
                   builder: (_) => ActionPhaseScreen(
                     roomCode: widget.roomCode,
-                    playerName: widget.playerName ?? '',
+                    playerName: widget.playerName,
                     isHost: widget.isHost,
                   ),
                 ),
