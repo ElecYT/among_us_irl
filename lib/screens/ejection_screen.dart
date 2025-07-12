@@ -19,7 +19,7 @@ class EjectionScreen extends StatefulWidget {
 }
 
 class _EjectionScreenState extends State<EjectionScreen> {
-  bool _hasProcessed = false; // To ensure elimination/phase update runs once
+  bool _hasProcessed = false;
 
   Future<void> _processEjection(Map<String, dynamic> data) async {
     if (_hasProcessed || !widget.isHost) return;
@@ -27,7 +27,7 @@ class _EjectionScreenState extends State<EjectionScreen> {
     final votes = Map<String, String>.from(data['votes'] ?? {});
     final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
 
-    // Tally votes
+    // Tally votes (ignoring 'skip')
     final tally = <String, int>{};
     for (final vote in votes.values) {
       tally[vote] = (tally[vote] ?? 0) + 1;
@@ -37,6 +37,7 @@ class _EjectionScreenState extends State<EjectionScreen> {
     int maxVotes = 0;
     bool tie = false;
     tally.forEach((key, count) {
+      if (key == 'skip') return; // Ignore skip votes for determining ejection
       if (count > maxVotes) {
         ejected = key;
         maxVotes = count;
@@ -49,25 +50,23 @@ class _EjectionScreenState extends State<EjectionScreen> {
     final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
 
     try {
-      // Apply elimination only if not tie/skip
-      if (!tie && ejected != null && ejected != 'skip') {
+      if (!tie && ejected != null) {
         final updatedPlayers = players.map((p) {
           if (p['name'] == ejected) return {...p, 'role': 'dead'};
           return p;
         }).toList();
-
         await roomRef.update({'players': updatedPlayers});
       }
+
       await Future.delayed(const Duration(seconds: 3));
-      // then update Firestore phase to 'action'
-      // Advance phase to 'action' after applying elimination
-      if (data['phase'] == 'ejection' && widget.isHost) {
+
+      if (data['phase'] == 'ejection') {
         await roomRef.update({'votes': {}, 'phase': 'action'});
       }
+
       _hasProcessed = true;
     } catch (e) {
       print("Error processing ejection: $e");
-      // Optionally show error in UI here
     }
   }
 
@@ -89,9 +88,7 @@ class _EjectionScreenState extends State<EjectionScreen> {
           final votes = Map<String, String>.from(data['votes'] ?? {});
           final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
 
-          // React to phase changes
           if (phase == 'action') {
-            // Navigate to action phase screen automatically
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!mounted) return;
               Navigator.pushReplacement(
@@ -109,18 +106,19 @@ class _EjectionScreenState extends State<EjectionScreen> {
           }
 
           if (phase == 'ejection') {
-            // Process elimination + phase advance automatically (only host)
             _processEjection(data);
 
-            // Tally votes for message
+            // Tally for UI (skip included for message logic)
             final tally = <String, int>{};
             for (final vote in votes.values) {
               tally[vote] = (tally[vote] ?? 0) + 1;
             }
+
             String? ejected;
             int maxVotes = 0;
             bool tie = false;
             tally.forEach((key, count) {
+              if (key == 'skip') return;
               if (count > maxVotes) {
                 ejected = key;
                 maxVotes = count;
@@ -130,7 +128,7 @@ class _EjectionScreenState extends State<EjectionScreen> {
               }
             });
 
-            final message = (tie || ejected == null || ejected == 'skip')
+            final message = (tie || ejected == null)
                 ? 'No one was ejected.'
                 : '$ejected was ejected.';
 
@@ -150,25 +148,19 @@ class _EjectionScreenState extends State<EjectionScreen> {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 24),
-                    if (widget.isHost)
-                      const Text(
-                        'Waiting for phase to advance to Action...',
-                        style: TextStyle(color: Colors.white70),
-                        textAlign: TextAlign.center,
-                      )
-                    else
-                      const Text(
-                        'Waiting for host to advance phase...',
-                        style: TextStyle(color: Colors.white70),
-                        textAlign: TextAlign.center,
-                      ),
+                    Text(
+                      widget.isHost
+                          ? 'Waiting for phase to advance to Action...'
+                          : 'Waiting for host to advance phase...',
+                      style: const TextStyle(color: Colors.white70),
+                      textAlign: TextAlign.center,
+                    ),
                   ],
                 ),
               ),
             );
           }
 
-          // Default fallback in case player somehow ends up here
           return const Center(
             child: Text(
               'Waiting for ejection phase to start...',
