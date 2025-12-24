@@ -56,7 +56,6 @@ class _VotingScreenState extends State<VotingScreen> {
     _navigated = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => screen));
     });
   }
 
@@ -87,16 +86,6 @@ class _VotingScreenState extends State<VotingScreen> {
               _navigated = true;
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 if (!mounted) return;
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => ActionPhaseScreen(
-                      roomCode: widget.roomCode,
-                      playerName: widget.playerName,
-                      isHost: widget.isHost,
-                    ),
-                  ),
-                );
               });
             }
             return const SizedBox();

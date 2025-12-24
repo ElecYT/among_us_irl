@@ -102,7 +102,6 @@ class _MeetingWaitingScreenState extends State<MeetingWaitingScreen> {
     _hasNavigated = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => targetScreen));
     });
   }
 

@@ -104,16 +104,8 @@ class _ActionPhaseScreenState extends State<ActionPhaseScreen> {
   }
 
   void _navigateToMeeting(BuildContext context) {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => MeetingScreen(
-          roomCode: widget.roomCode,
-          playerName: widget.playerName,
-          isHost: widget.isHost,
-        ),
-      ),
-    );
+    // intentionally disabled: routing is handled by PhaseRouter
+    return;
   }
 
   @override

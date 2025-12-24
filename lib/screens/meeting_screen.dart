@@ -57,14 +57,8 @@ class _MeetingScreenState extends State<MeetingScreen> {
   }
 
   void _navigateOnce(BuildContext context, Widget screen) {
-    if (_hasNavigated || !mounted) return;
-    _hasNavigated = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => screen),
-      );
-    });
+    // intentionally disabled: routing is handled by PhaseRouter
+    return;
   }
 
   @override
