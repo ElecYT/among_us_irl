@@ -35,7 +35,7 @@ class PhaseRouter extends StatelessWidget {
 
         final data = snapshot.data!.data() ?? {};
         final phase = (data['phase'] as String?) ?? 'waiting';
-
+        debugPrint("ROUTE phase=$phase room=$roomCode");
         switch (phase) {
           case 'waiting':
             return LobbyScreen(roomCode: roomCode, playerName: playerName, isHost: isHost);
