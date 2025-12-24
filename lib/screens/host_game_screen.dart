@@ -75,13 +75,14 @@ class _HostGameScreenState extends State<HostGameScreen> {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => LobbyScreen(
+          builder: (_) => PhaseRouter(
             roomCode: roomCode,
-            isHost: true,
             playerName: playerName,
+            isHost: true,
           ),
         ),
       );
+
     } catch (e) {
       if (!mounted) return;
       setState(() {

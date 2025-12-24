@@ -81,13 +81,14 @@ class RoleRevealScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 30),
                 ElevatedButton(
-                  onPressed: () {
-                    // Proceed to Action Phase
-                    FirebaseFirestore.instance
+                  onPressed: isHost
+                      ? () async {
+                    await FirebaseFirestore.instance
                         .collection('games')
                         .doc(roomCode)
                         .update({'phase': 'action'});
-                  },
+                  }
+                      : null,
                   child: const Text('Start'),
                 ),
               ],

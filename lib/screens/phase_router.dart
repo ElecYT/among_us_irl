@@ -47,6 +47,7 @@ class _PhaseRouterState extends State<PhaseRouter> {
 
   @override
   Widget build(BuildContext context) {
+
     final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
 
     return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(

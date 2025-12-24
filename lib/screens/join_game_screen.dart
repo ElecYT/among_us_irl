@@ -2,7 +2,6 @@ import 'package:among_us_irl/screens/phase_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'lobby_screen.dart';
 
 class JoinGameScreen extends StatefulWidget {
   const JoinGameScreen({super.key});
@@ -70,12 +69,13 @@ class _JoinGameScreenState extends State<JoinGameScreen> {
 
       if (!mounted) return;
 
-      Navigator.of(context).pushReplacement(
+      Navigator.pushReplacement(
+        context,
         MaterialPageRoute(
-          builder: (_) => LobbyScreen(
+          builder: (_) => PhaseRouter(
             roomCode: roomCode,
-            isHost: false,
             playerName: playerName,
+            isHost: false,
           ),
         ),
       );
