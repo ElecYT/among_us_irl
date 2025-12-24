@@ -41,45 +41,60 @@ class _HostGameScreenState extends State<HostGameScreen> {
       errorMessage = null;
     });
 
-    final roomRef = FirebaseFirestore.instance
-        .collection('games')
-        .doc(roomCode);
+    try {
+      final roomRef = FirebaseFirestore.instance.collection('games').doc(roomCode);
 
-    // Ensure no player collision on name in this code
-    final doc = await roomRef.get();
-    if (doc.exists) {
-      final data = doc.data() as Map<String, dynamic>;
-      final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
-      if (players.any(
-        (p) => p['name'].toString().toLowerCase() == playerName.toLowerCase(),
-      )) {
-        setState(() {
-          isLoading = false;
-          errorMessage = 'Name already in use in this room.';
-        });
-        return;
+      // Ensure no player collision on name in this code
+      final doc = await roomRef.get();
+      if (doc.exists) {
+        final data = doc.data() as Map<String, dynamic>;
+        final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
+        final nameTaken = players.any(
+              (p) => p['name'].toString().toLowerCase() == playerName.toLowerCase(),
+        );
+
+        if (nameTaken) {
+          if (!mounted) return;
+          setState(() => errorMessage = 'Name already in use in this room.');
+          return;
+        }
       }
+
+      await roomRef.set({
+        'code': roomCode,
+        'created_at': DateTime.now(),
+        'players': [
+          {'name': playerName, 'role': 'undecided'},
+        ],
+        'phase': 'waiting',
+        'imposter_count': 1,
+      });
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LobbyScreen(
+            roomCode: roomCode,
+            isHost: true,
+            playerName: playerName,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        errorMessage = 'Firestore error creating room: $e';
+      });
+    } finally {
+      if (!mounted) return;
+      setState(() {
+        isLoading = false;
+      });
     }
-
-    await roomRef.set({
-      'code': roomCode,
-      'created_at': DateTime.now(),
-      'players': [
-        {'name': playerName, 'role': 'undecided'},
-      ],
-      'phase': 'waiting',
-      'imposter_count': 1,
-    });
-
-    if (!mounted) return;
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PhaseRouter(roomCode: roomCode, playerName: playerName, isHost: true),
-      ),
-    );
   }
+
 
   @override
   void dispose() {

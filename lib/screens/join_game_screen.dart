@@ -35,47 +35,61 @@ class _JoinGameScreenState extends State<JoinGameScreen> {
       isLoading = true;
     });
 
-    final roomRef = FirebaseFirestore.instance.collection('games').doc(roomCode);
-    final doc = await roomRef.get();
+    try {
+      final roomRef = FirebaseFirestore.instance.collection('games').doc(roomCode);
+      final doc = await roomRef.get();
 
-    if (!doc.exists) {
+      if (!doc.exists) {
+        if (!mounted) return;
+        setState(() => errorMessage = 'Room not found.');
+        return;
+      }
+
+      final data = doc.data() as Map<String, dynamic>;
+      final phase = data['phase'] ?? 'waiting';
+      if (phase != 'waiting') {
+        if (!mounted) return;
+        setState(() => errorMessage = 'Game already started. Please wait for a new room.');
+        return;
+      }
+
+      final List<Map<String, dynamic>> players =
+      List<Map<String, dynamic>>.from(data['players'] ?? []);
+
+      final nameTaken = players.any(
+            (p) => p['name'].toString().toLowerCase() == playerName.toLowerCase(),
+      );
+      if (nameTaken) {
+        if (!mounted) return;
+        setState(() => errorMessage = 'Name already in use in this lobby.');
+        return;
+      }
+
+      players.add({'name': playerName, 'role': 'undecided'});
+      await roomRef.update({'players': players});
+
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (_) => LobbyScreen(
+            roomCode: roomCode,
+            isHost: false,
+            playerName: playerName,
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        errorMessage = 'Firestore error joining room: $e';
+      });
+    } finally {
+      if (!mounted) return;
       setState(() {
         isLoading = false;
-        errorMessage = 'Room not found.';
       });
-      return;
     }
-
-    final data = doc.data() as Map<String, dynamic>;
-    final phase = data['phase'] ?? 'waiting';
-    if (phase != 'waiting') {
-      setState(() {
-        isLoading = false;
-        errorMessage = 'Game already started. Please wait for a new room.';
-      });
-      return;
-    }
-
-    final List<Map<String, dynamic>> players = List<Map<String, dynamic>>.from(data['players'] ?? []);
-    if (players.any((p) => p['name'].toString().toLowerCase() == playerName.toLowerCase())) {
-      setState(() {
-        isLoading = false;
-        errorMessage = 'Name already in use in this lobby.';
-      });
-      return;
-    }
-
-    players.add({'name': playerName, 'role': 'undecided'});
-    await roomRef.update({'players': players});
-
-    if (!mounted) return;
-
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(
-        builder: (_) => PhaseRouter(roomCode: roomCode, playerName: playerName, isHost: false),
-      ),
-    );
   }
 
   @override
