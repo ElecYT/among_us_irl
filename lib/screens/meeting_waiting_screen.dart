@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'ejection_screen.dart';
 
 class MeetingWaitingScreen extends StatefulWidget {
   final String roomCode;
@@ -24,9 +23,27 @@ class _MeetingWaitingScreenState extends State<MeetingWaitingScreen> {
   Timer? countdownTimer;
   int secondsLeft = 70;
   bool _hasNavigated = false;
+  bool _requestedResolution = false;
 
+  Future<void> _requestEjectionResolution() async {
+    if (!widget.isHost) return;
+    if (_requestedResolution) return;
+
+    _requestedResolution = true;
+
+    final gameRef = FirebaseFirestore.instance
+        .collection('games')
+        .doc(widget.roomCode);
+
+    await gameRef.update({
+      'phase': 'ejection_pending',
+      'resolutionState': 'pending',
+      'resolutionId': FieldValue.increment(1),
+    });
+  }
   @override
   void initState() {
+
     super.initState();
     gameRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
     _startCountdownAndMonitor();
@@ -61,12 +78,7 @@ class _MeetingWaitingScreenState extends State<MeetingWaitingScreen> {
         _updateSecondsLeft(deadline);
 
         if (secondsLeft <= 0) {
-          timer.cancel();
-          if (widget.isHost) {
-            if (data['phase'] == 'voting' && widget.isHost) {
-              await gameRef.update({'phase': 'ejection'});
-            }
-          }
+            await _requestEjectionResolution();
         } else {
           final doc = await gameRef.get();
           final d = doc.data();
@@ -77,10 +89,7 @@ class _MeetingWaitingScreenState extends State<MeetingWaitingScreen> {
           final aliveCount = players.where((p) => p['role'] != 'dead').length;
 
           if (widget.isHost && votes.length >= aliveCount) {
-            timer.cancel();
-            if (data['phase'] == 'voting' && widget.isHost) {
-              await gameRef.update({'phase': 'ejection'});
-            }
+        await _requestEjectionResolution();
           }
         }
       });
