@@ -50,16 +50,16 @@ class DefaultFirebaseOptions {
     apiKey: 'AIzaSyBgtdA8JR6C2t03iV_neACNUbBMz_vWweU',
     appId: '1:671560784167:android:9cbcef88aecbc1f5a53102',
     messagingSenderId: '671560784167',
-    projectId: 'among-us-irl-5ec19',
-    storageBucket: 'among-us-irl-5ec19.firebasestorage.app',
+    projectId: 'among-us-irl-56e30',
+    storageBucket: 'among-us-irl-56e30.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAYypOsbF4xjW6ot3_3QqqxhdhYQ8bBq3w',
     appId: '1:671560784167:ios:f51ac4c50acdb916a53102',
     messagingSenderId: '671560784167',
-    projectId: 'among-us-irl-5ec19',
-    storageBucket: 'among-us-irl-5ec19.firebasestorage.app',
+    projectId: 'among-us-irl-56e30',
+    storageBucket: 'among-us-irl-56e30.firebasestorage.app',
     iosBundleId: 'me.elec.amongUsIrl',
   );
 
@@ -67,9 +67,9 @@ class DefaultFirebaseOptions {
     apiKey: 'AIzaSyB5Wy5fmP8USMhJzMn7fNBFu5jZyedCvbE',
     appId: '1:671560784167:web:424a8d77e7806354a53102',
     messagingSenderId: '671560784167',
-    projectId: 'among-us-irl-5ec19',
-    authDomain: 'among-us-irl-5ec19.firebaseapp.com',
-    storageBucket: 'among-us-irl-5ec19.firebasestorage.app',
+    projectId: 'among-us-irl-56e30',
+    authDomain: 'among-us-irl-56e30.firebaseapp.com',
+    storageBucket: 'among-us-irl-56e30.firebasestorage.app',
     measurementId: 'G-GFRL6HEP46',
   );
 
