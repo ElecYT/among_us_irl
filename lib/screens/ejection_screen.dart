@@ -22,103 +22,57 @@ class _EjectionScreenState extends State<EjectionScreen> {
   bool _hasProcessed = false;
   bool _hasNavigated = false;
 
-  Future<void> _processEjection(Map<String, dynamic> _) async {
+  Future<void> _processEjection(Map<String, dynamic> data) async {
     if (_hasProcessed || !widget.isHost) return;
 
-    final roomRef =
-    FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
+    final votes = Map<String, String>.from(data['votes'] ?? {});
+    final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
+
+    // Tally votes (ignoring 'skip')
+    final tally = <String, int>{};
+    for (final vote in votes.values) {
+      tally[vote] = (tally[vote] ?? 0) + 1;
+    }
+
+    String? ejected;
+    int maxVotes = 0;
+
+    bool tie = false;
+    tally.forEach((key, count) {
+      if (key == 'skip') return; // Ignore skip votes for determining ejection
+      if (count > maxVotes) {
+        ejected = key;
+        maxVotes = count;
+
+        tie = false;
+      } else if (count == maxVotes) {
+        tie = true;
+      }
+    });
+
+    final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
 
     try {
-      await FirebaseFirestore.instance.runTransaction((txn) async {
-        final snap = await txn.get(roomRef);
-        final data = snap.data() as Map<String, dynamic>? ?? {};
+      if (!tie && ejected != null) {
+        final updatedPlayers = players.map((p) {
+          if (p['name'] == ejected) return {...p, 'role': 'dead'};
+          return p;
+        }).toList();
+        await roomRef.update({'players': updatedPlayers});
+      }
 
-        // Only process once, only during the ejection phase
-        if (data['phase'] != 'ejection') return;
+      await Future.delayed(const Duration(seconds: 3));
 
-        // votes: expected shape { "voterName": "targetName" } where targetName may be "skip"
-        final rawVotes = data['votes'];
-        final Map<String, String> votes = {};
-        if (rawVotes is Map) {
-          for (final entry in rawVotes.entries) {
-            final k = entry.key?.toString();
-            final v = entry.value?.toString();
-            if (k != null && v != null) votes[k] = v;
-          }
-        }
-
-        // players: expected list of maps with at least { "name": ..., "role": ... }
-        final rawPlayers = data['players'];
-        final List<Map<String, dynamic>> players = (rawPlayers is List)
-            ? rawPlayers
-            .whereType<Map>()
-            .map((m) => Map<String, dynamic>.from(m))
-            .toList()
-            : <Map<String, dynamic>>[];
-
-        // Only alive players should count as voters (and valid targets)
-        bool isAlivePlayer(String name) {
-          for (final p in players) {
-            if (p['name']?.toString() == name) {
-              return p['role']?.toString() != 'dead';
-            }
-          }
-          return false;
-        }
-
-        // Count votes (including skip as its own bucket)
-        final Map<String, int> counts = {};
-        votes.forEach((voter, choice) {
-          if (!isAlivePlayer(voter)) return;
-          counts[choice] = (counts[choice] ?? 0) + 1;
-        });
-
-        final int skipCount = counts['skip'] ?? 0;
-
-        // Find top-voted player excluding skip; detect ties
-        String? topPlayer;
-        int topVotes = 0;
-        bool tie = false;
-
-        counts.forEach((choice, c) {
-          if (choice == 'skip') return;
-          if (c > topVotes) {
-            topVotes = c;
-            topPlayer = choice;
-            tie = false;
-          } else if (c == topVotes && c != 0) {
-            tie = true;
-          }
-        });
-
-        // Among Us-style rule:
-        // - tie => no ejection
-        // - skip >= topVotes => no ejection
-        // - no votes => no ejection
-        final bool shouldEject =
-            !tie && topPlayer != null && topVotes > 0 && skipCount < topVotes;
-
-        if (shouldEject) {
-          final updatedPlayers = players.map((p) {
-            if (p['name']?.toString() == topPlayer) {
-              return <String, dynamic>{...p, 'role': 'dead'};
-            }
-            return p;
-          }).toList();
-
-          txn.update(roomRef, {'players': updatedPlayers});
-        }
-
-        // Clear votes and advance phase (adjust 'action' if your next phase differs)
-        txn.update(roomRef, {'votes': {}, 'phase': 'action'});
-      });
+      if (data['phase'] == 'ejection') {
+        await roomRef.update({'votes': {}, 'phase': 'action'});
+      }
 
       _hasProcessed = true;
     } catch (e) {
-      // Keep it simple; you can swap to your logger if you have one.
       print("Error processing ejection: $e");
     }
   }
+
 
 
   @override
@@ -137,25 +91,6 @@ class _EjectionScreenState extends State<EjectionScreen> {
           final data = snapshot.data!.data() ?? {};
           final phase = data['phase'] ?? '';
           final votes = Map<String, String>.from(data['votes'] ?? {});
-          final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
-
-          if (phase == 'action' && !_hasNavigated) {
-            _hasNavigated = true;
-            Future.microtask(() {
-              if (!mounted) return;
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ActionPhaseScreen(
-                    roomCode: widget.roomCode,
-                    playerName: widget.playerName,
-                    isHost: widget.isHost,
-                  ),
-                ),
-              );
-            });
-            return const SizedBox();
-          }
 
 
           if (phase == 'ejection') {

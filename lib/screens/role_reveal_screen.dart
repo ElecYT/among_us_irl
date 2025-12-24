@@ -83,16 +83,10 @@ class RoleRevealScreen extends StatelessWidget {
                 ElevatedButton(
                   onPressed: () {
                     // Proceed to Action Phase
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => ActionPhaseScreen(
-                          roomCode: roomCode,
-                          playerName: playerName,
-                          isHost: isHost,
-                        ),
-                      ),
-                    );
+                    FirebaseFirestore.instance
+                        .collection('games')
+                        .doc(roomCode)
+                        .update({'phase': 'action'});
                   },
                   child: const Text('Start'),
                 ),

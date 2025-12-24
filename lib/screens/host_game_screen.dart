@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'package:among_us_irl/screens/phase_router.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'lobby_screen.dart';
@@ -75,11 +76,7 @@ class _HostGameScreenState extends State<HostGameScreen> {
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (context) => LobbyScreen(
-          roomCode: roomCode,
-          isHost: true,
-          playerName: playerName,
-        ),
+        builder: (_) => PhaseRouter(roomCode: roomCode, playerName: playerName, isHost: true),
       ),
     );
   }

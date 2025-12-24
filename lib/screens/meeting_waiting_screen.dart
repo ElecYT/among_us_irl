@@ -119,29 +119,6 @@ class _MeetingWaitingScreenState extends State<MeetingWaitingScreen> {
       builder: (context, snapshot) {
         if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
 
-        final data = snapshot.data!.data() ?? {};
-        final phase = data['phase'] ?? '';
-
-        if ((phase == 'ejection' || phase == 'results' || phase == 'action') && !_hasNavigated) {
-          if (!_hasNavigated) {
-            if (phase == 'ejection' || phase == 'results') {
-              _navigateOnce(EjectionScreen(
-                roomCode: widget.roomCode,
-                playerName: widget.playerName,
-                isHost: widget.isHost,
-              ));
-            } else if (phase == 'action') {
-              Navigator.pushReplacementNamed(
-                context,
-                '/action',
-                arguments: {
-                  'roomCode': widget.roomCode,
-                  'playerName': widget.playerName,
-                },
-              );
-            }
-          }
-        }
 
         return Scaffold(
           backgroundColor: Colors.black87,

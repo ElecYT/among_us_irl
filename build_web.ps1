@@ -10,4 +10,4 @@ Copy-Item -Recurse build\web\* docs\
 
 git add docs
 git commit -m "Deploy web" 2>$null
-git pus
+git push

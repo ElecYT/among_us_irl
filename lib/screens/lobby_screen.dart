@@ -60,34 +60,6 @@ class _LobbyScreenState extends State<LobbyScreen> {
             // Sync _imposterCount in state to Firestore
             if (_imposterCount != imposterCount) _imposterCount = imposterCount;
 
-            void doNavigate(Widget Function() builder) {
-              if (_hasNavigated) return;
-              _hasNavigated = true;
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (!mounted) return;
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(
-                    builder: (BuildContext context) => builder(),
-                  ),
-                );
-              });
-            }
-
-            if (phase == 'role_reveal') {
-              doNavigate(
-                    () => RoleRevealScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost),
-              );
-            } else if (phase == 'action') {
-              doNavigate(
-                    () => ActionPhaseScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost),
-              );
-            } else if (phase == 'voting') {
-              doNavigate(
-                    () => VotingScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost),
-              );
-            }
-
             return Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
