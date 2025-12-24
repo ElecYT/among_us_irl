@@ -38648,7 +38648,7 @@ A.eo(a).iG(s)},
 a7Y(a){var s=A.k1(new A.a1Q(),null,t.z)
 A.eo(a).iG(s)},
 M(a){var s=null,r=A.hz(B.N,B.d3,s,B.di,B.D,B.dF,s)
-return A.ry(!0,A.td(A.vM(!0,s,B.SG),A.jC(new A.cL(B.mV,A.lf(A.c([B.SW,B.SP,B.yJ,A.lp(B.ze,new A.a1R(this,a)),B.f_,A.lp(B.SS,new A.a1S(this,a))],t.E),B.aS,B.dh,B.cc),s),s,s)),s,r,"")}}
+return A.ry(!0,A.td(A.vM(!0,s,B.SM),A.jC(new A.cL(B.mV,A.lf(A.c([B.SW,B.SP,B.yJ,A.lp(B.ze,new A.a1R(this,a)),B.f_,A.lp(B.SS,new A.a1S(this,a))],t.E),B.aS,B.dh,B.cc),s),s,s)),s,r,"")}}
 A.a1P.prototype={
 $1(a){return B.F5},
 $S:267}
@@ -38927,7 +38927,7 @@ s=A.acc(o.d,B.nt,!o.r,n,20,n,B.l2)
 r=o.r
 q=r?n:o.gagb()
 p=t.E
-q=A.c([B.ST,B.Ob,k,B.f_,B.SL,B.yJ,s,B.cM,A.lp(r?B.Oe:B.SK,q)],p)
+q=A.c([B.ST,B.Ob,k,B.f_,B.SK,B.yJ,s,B.cM,A.lp(r?B.Oe:B.SJ,q)],p)
 k=o.f
 if(k!=null)B.b.S(q,A.c([B.cM,A.ds(k,n,n,n,B.zc,n,n)],p))
 return A.ry(!0,A.td(l,A.jC(new A.cL(B.EB,A.lf(q,B.aS,B.dh,B.cc),n),n,n)),n,m,"")}}
@@ -39126,13 +39126,13 @@ o=A.c([],p)
 if(k.a.d){n=k.d
 m=t.xs
 m=A.X(new A.a3(A.c([1,2,3],t.t),new A.aiA(),m),m.i("ah.E"))
-B.b.S(o,A.c([B.Od,B.SJ,B.SQ,new A.qT(m,n,new A.aiB(k,this.b),l,t.CB)],p))}if(!k.a.d)o.push(B.KM)
+B.b.S(o,A.c([B.Od,B.SI,B.SQ,new A.qT(m,n,new A.aiB(k,this.b),l,t.CB)],p))}if(!k.a.d)o.push(B.KM)
 o.push(B.yI)
 o.push(B.SN)
 p=r.length
 o.push(A.atW(p===0?B.Cf:A.auK(new A.aiC(r),p)))
-o.push(B.SH)
-o.push(B.SM)
+o.push(B.SG)
+o.push(B.SL)
 if(k.a.d){p=r.length
 n=k.d
 p=p<n+1
@@ -39283,7 +39283,7 @@ B.b.S(p,new A.a3(r,new A.akN(s),A.Z(r).i("a3<1,f>")))
 p.push(B.f_)
 p.push(A.acc(s.e,B.Fh,q,q,q,q,B.l2))
 p.push(B.f_)
-p.push(A.lp(B.SI,s.gXp()))
+p.push(A.lp(B.SH,s.gXp()))
 return new A.cL(B.mU,A.lf(p,B.aS,B.cb,B.cc),q)},
 $S:118}
 A.akM.prototype={
@@ -86780,16 +86780,16 @@ B.RU=new A.p(!0,B.l,null,".AppleSystemUIFont",null,null,null,null,null,null,null
 B.Ps=new A.p(!0,B.l,null,".AppleSystemUIFont",null,null,null,null,null,null,null,null,null,null,null,null,null,B.e,null,null,null,"blackRedwoodCity labelSmall",null,null,null,null)
 B.SE=new A.dR(B.QS,B.Q2,B.QT,B.Rk,B.PJ,B.PR,B.Qm,B.Rc,B.Qw,B.RJ,B.Pj,B.Pz,B.RF,B.RU,B.Ps)
 B.SF=new A.ck("Return to Main Menu",null,null,null,null,null,null,null,null)
-B.SG=new A.ck("Among Us IRL - beta 0.8.7",null,null,null,null,null,null,null,null)
 B.zd=new A.p(!0,null,null,null,null,null,20,B.c8,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.SH=new A.ck("How the Game works",null,B.zd,null,null,null,null,null,null)
+B.SG=new A.ck("How the Game works",null,B.zd,null,null,null,null,null,null)
 B.ze=new A.ck("Host Game",null,null,null,null,null,null,null,null)
-B.SI=new A.ck("Submit Report",null,null,null,null,null,null,null,null)
+B.SH=new A.ck("Submit Report",null,null,null,null,null,null,null,null)
 B.l6=new A.p(!0,null,null,null,null,null,18,B.I,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null)
-B.SJ=new A.ck("Recommended Imposter amounts: 4-8 players: 1, 9-11 players: 2, 12+ players: 3",null,B.l6,null,null,null,null,null,null)
-B.SK=new A.ck("Create Game",null,null,null,null,null,null,null,null)
-B.SL=new A.ck('Share this code with your friends to join. You need to click the "create game" button before they may join.',null,null,null,null,null,null,null,null)
-B.SM=new A.ck("If you are a crewmate, you try to vote out the imposter or complete all the tasks before they kill everyone! If you are an imposter, you try not to arouse suspicion and kill people until there is the same number of crewmates as imposters! Report dead bodies as you find them.",null,B.l6,null,null,null,null,null,null)
+B.SI=new A.ck("Recommended Imposter amounts: 4-8 players: 1, 9-11 players: 2, 12+ players: 3",null,B.l6,null,null,null,null,null,null)
+B.SJ=new A.ck("Create Game",null,null,null,null,null,null,null,null)
+B.SK=new A.ck('Share this code with your friends to join. You need to click the "create game" button before they may join.',null,null,null,null,null,null,null,null)
+B.SL=new A.ck("If you are a crewmate, you try to vote out the imposter or complete all the tasks before they kill everyone! If you are an imposter, you try not to arouse suspicion and kill people until there is the same number of crewmates as imposters! Report dead bodies as you find them.",null,B.l6,null,null,null,null,null,null)
+B.SM=new A.ck("Among Us IRL - beta 0.8.71",null,null,null,null,null,null,null,null)
 B.SN=new A.ck("Players in Room:",null,B.zd,null,null,null,null,null,null)
 B.SP=new A.ck("Get ready for an epic game of Among Us played in real life! Complete tasks, kill players (as the imposter), and vote out players to win the game.",null,B.l6,null,null,null,null,null,null)
 B.SQ=new A.ck("Number of Imposters:",null,B.hZ,null,null,null,null,null,null)
