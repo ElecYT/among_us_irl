@@ -1,40 +1,21 @@
 {
   "project_info": {
-    "project_number": "671560784167",
-    "project_id": "among-us-irl-5ec19",
-    "storage_bucket": "among-us-irl-5ec19.firebasestorage.app"
+    "project_number": "343626358470",
+    "project_id": "among-us-irl-56e30",
+    "storage_bucket": "among-us-irl-56e30.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:671560784167:android:e7d86051337dab12a53102",
+        "mobilesdk_app_id": "1:343626358470:android:39b65ab9fb05bed7ffc1c7",
         "android_client_info": {
-          "package_name": "me.elec"
+          "package_name": "me.elec.amongusirl"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBgtdA8JR6C2t03iV_neACNUbBMz_vWweU"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:671560784167:android:9cbcef88aecbc1f5a53102",
-        "android_client_info": {
-          "package_name": "me.elec.among_us_irl"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
-        {
-          "current_key": "AIzaSyBgtdA8JR6C2t03iV_neACNUbBMz_vWweU"
+          "current_key": "AIzaSyADS8waVXaOm-4qLqHwf9RP5pcQI4GM2-o"
         }
       ],
       "services": {
