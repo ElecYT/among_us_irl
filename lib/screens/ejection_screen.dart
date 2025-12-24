@@ -22,54 +22,72 @@ class _EjectionScreenState extends State<EjectionScreen> {
   bool _hasProcessed = false;
   bool _hasNavigated = false;
 
-  Future<void> _processEjection(Map<String, dynamic> data) async {
-    if (_hasProcessed || !widget.isHost) return;
+    Future<void> _processEjection(Map<String, dynamic> _) async {
+      if (_hasProcessed || !widget.isHost) return;
+    
+      final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
 
-    final votes = Map<String, String>.from(data['votes'] ?? {});
-    final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
+      try {
+        await roomRef.runTransaction((txn) async {
+          final snap = await txn.get(roomRef);
+          final data = snap.data() as Map<String, dynamic>? ?? {};
 
-    // Tally votes (ignoring 'skip')
-    final tally = <String, int>{};
-    for (final vote in votes.values) {
-      tally[vote] = (tally[vote] ?? 0) + 1;
+          // Only process once, only during ejection
+          if (data['phase'] != 'ejection') return;
+
+          final votes = Map<String, String>.from(data['votes'] ?? {});
+          final players = List<Map<String, dynamic>>.from(data['players'] ?? []);
+
+          // Count only alive players for safety
+          final alive = players.where((p) => p['role'] != 'dead').map((p) => p['name'] as String).toSet();
+
+          // Build counts (including skip as a "candidate")
+          final counts = <String, int>{};
+          votes.forEach((voter, choice) {
+            if (!alive.contains(voter)) return; // dead voters ignored
+            counts[choice] = (counts[choice] ?? 0) + 1;
+          });
+
+          final skipCount = counts['skip'] ?? 0;
+
+          // Find top-voted player (excluding skip)
+          String? topPlayer;
+          int topVotes = 0;
+          bool tie = false;
+
+          counts.forEach((choice, c) {
+            if (choice == 'skip') return;
+            if (c > topVotes) {
+              topVotes = c;
+              topPlayer = choice;
+              tie = false;
+            } else if (c == topVotes && c != 0) {
+              tie = true;
+            }
+          });
+
+          // Among Us rule:
+          // - if tie OR no votes OR skip >= topVotes => no ejection
+          final shouldEject = !tie && topPlayer != null && topVotes > 0 && skipCount < topVotes;
+
+          if (shouldEject) {
+            final updatedPlayers = players.map((p) {
+              if (p['name'] == topPlayer) return {...p, 'role': 'dead'};
+              return p;
+            }).toList();
+            txn.update(roomRef, {'players': updatedPlayers});
+          }
+
+          // Clear votes and advance
+          txn.update(roomRef, {'votes': {}, 'phase': 'action'});
+        });
+
+        _hasProcessed = true;
+      } catch (e) {
+        print("Error processing ejection: $e");
+      }
     }
 
-    String? ejected;
-    int maxVotes = 0;
-    bool tie = false;
-    tally.forEach((key, count) {
-      if (key == 'skip') return; // Ignore skip votes for determining ejection
-      if (count > maxVotes) {
-        ejected = key;
-        maxVotes = count;
-        tie = false;
-      } else if (count == maxVotes) {
-        tie = true;
-      }
-    });
-
-    final roomRef = FirebaseFirestore.instance.collection('games').doc(widget.roomCode);
-
-    try {
-      if (!tie && ejected != null) {
-        final updatedPlayers = players.map((p) {
-          if (p['name'] == ejected) return {...p, 'role': 'dead'};
-          return p;
-        }).toList();
-        await roomRef.update({'players': updatedPlayers});
-      }
-
-      await Future.delayed(const Duration(seconds: 3));
-
-      if (data['phase'] == 'ejection') {
-        await roomRef.update({'votes': {}, 'phase': 'action'});
-      }
-
-      _hasProcessed = true;
-    } catch (e) {
-      print("Error processing ejection: $e");
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
