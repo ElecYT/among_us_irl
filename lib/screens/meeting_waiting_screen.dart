@@ -122,38 +122,6 @@ class _MeetingWaitingScreenState extends State<MeetingWaitingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-      stream: gameRef.snapshots(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) return const Center(child: CircularProgressIndicator());
-
-
-        return Scaffold(
-          backgroundColor: Colors.black87,
-          appBar: AppBar(
-            title: Text('Waiting for Ejection - ${widget.playerName}'),
-            centerTitle: true,
-          ),
-          body: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'Waiting for others to finish voting...',
-                  style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  'Time Remaining: $secondsLeft seconds',
-                  style: const TextStyle(fontSize: 18, color: Colors.white70),
-                ),
-                const SizedBox(height: 20),
-                const CircularProgressIndicator(),
-              ],
-            ),
-          ),
-        );
-      },
-    );
+    return const SizedBox.shrink();
   }
 }

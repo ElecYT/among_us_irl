@@ -1,3 +1,4 @@
+import 'package:among_us_irl/screens/voting_stage_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
@@ -74,7 +75,11 @@ class _PhaseRouterState extends State<PhaseRouter> {
             return MeetingScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost);
 
           case 'voting':
-            return VotingScreen(roomCode: widget.roomCode, playerName: widget.playerName, isHost: widget.isHost);
+            return VotingStageScreen(
+              roomCode: widget.roomCode,
+              playerName: widget.playerName,
+              isHost: widget.isHost,
+            );
 
         // Your code uses these as "go to ejection"
           case 'results':
